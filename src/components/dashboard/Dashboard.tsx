@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { TransactionHistory } from "./TransactionHistory";
+
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useVaultState } from "@yo-protocol/react";
@@ -35,7 +38,7 @@ export function Dashboard() {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="w-24 h-24 bg-misty-rose rounded-full flex items-center justify-center mb-2 shadow-[0_0_40px_rgba(255,228,225,0.8)] border border-white/50"
+          className="w-24 h-24 bg-misty-rose rounded-xl flex items-center justify-center mb-2 shadow-[0_0_40px_rgba(255,228,225,0.8)] border border-white/50"
         >
           <span className="text-4xl text-terracotta font-display italic">O</span>
         </motion.div>
@@ -57,7 +60,7 @@ export function Dashboard() {
       {/* Header */}
       <header className="flex justify-between items-center mb-16">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-misty-rose rounded-full flex items-center justify-center text-terracotta font-display text-xl border border-white/60 shadow-sm">
+          <div className="w-10 h-10 bg-misty-rose rounded-xl flex items-center justify-center text-terracotta font-display text-xl border border-white/60 shadow-sm">
             O
           </div>
           <h1 className="text-xl tracking-widest text-deep-slate uppercase text-sm font-semibold">Oasis</h1>
@@ -84,18 +87,31 @@ export function Dashboard() {
             </div>
             
             <div className="flex items-center gap-3 pt-2">
-              <span className="inline-flex items-center bg-misty-rose text-terracotta px-3 py-1.5 rounded-full text-sm font-medium border border-terracotta/20 shadow-sm">
+              <span className="inline-flex items-center bg-misty-rose text-terracotta px-3 py-1.5 rounded-xl text-sm font-medium border border-terracotta/20 shadow-sm">
                 <TrendingUp className="w-4 h-4 mr-1.5" />
                 +${generatedYield.toFixed(2)} Yield
               </span>
               <span className="text-sm text-deep-slate/60 flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terracotta opacity-40"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-terracotta"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-xl bg-terracotta opacity-40"></span>
+                  <span className="relative inline-flex rounded-xl h-2 w-2 bg-terracotta"></span>
                 </span>
                 Earning {currentApy.toFixed(2)}% APY via YO
               </span>
             </div>
+          </motion.div>
+
+          
+          {/* Navigation Links */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05, ease: "easeOut" }}
+            className="flex gap-4 mb-8"
+          >
+            <Link href="/dashboard/explore" className="px-6 py-3 bg-white/60 border border-white hover:bg-white text-deep-slate rounded-xl font-bold text-sm transition-all shadow-sm flex items-center gap-2">
+              Explore Protocol ↗
+            </Link>
           </motion.div>
 
           {/* Pockets Visualization */}
@@ -103,7 +119,7 @@ export function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            className="bg-white/40 backdrop-blur-xl rounded-[2rem] p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+            className="bg-white/40 backdrop-blur-xl rounded-xl p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
           >
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-2xl font-display text-deep-slate">Your Allocations</h3>
@@ -130,30 +146,33 @@ export function Dashboard() {
           </motion.div>
         </div>
 
+        
         {/* Sidebar */}
         <div className="lg:col-span-5 space-y-6">
+          <TransactionHistory />
+
           
           {/* Add Funds */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className="bg-deep-slate text-seashell rounded-[2rem] p-8 relative overflow-hidden group"
+            className="bg-deep-slate text-seashell rounded-xl p-8 relative overflow-hidden group"
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-terracotta/20 rounded-full blur-3xl -mr-20 -mt-20 transition-transform duration-700 group-hover:scale-150"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-terracotta/20 rounded-xl blur-3xl -mr-20 -mt-20 transition-transform duration-700 group-hover:scale-150"></div>
             
             <h3 className="text-2xl font-display mb-6 relative z-10">Nourish your Oasis</h3>
             
-            <button className="w-full py-4 mb-4 bg-seashell text-deep-slate rounded-2xl font-medium transition-transform hover:scale-[1.02] active:scale-[0.98] flex justify-center items-center gap-2 shadow-lg relative z-10">
+            <button className="w-full py-4 mb-4 bg-seashell text-deep-slate rounded-xl font-medium transition-transform hover:scale-[1.02] active:scale-[0.98] flex justify-center items-center gap-2 shadow-lg relative z-10">
               <Plus className="w-5 h-5 text-terracotta" />
               Manual Deposit
             </button>
 
             <div className="mt-8 relative z-10">
               <p className="text-sm text-seashell/60 mb-4 uppercase tracking-widest">Spare Change Engine</p>
-              <div className="flex justify-between items-center bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+              <div className="flex justify-between items-center bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-terracotta/20 flex items-center justify-center text-xl border border-terracotta/30">☕</div>
+                  <div className="w-10 h-10 rounded-xl bg-terracotta/20 flex items-center justify-center text-xl border border-terracotta/30">☕</div>
                   <div>
                     <p className="font-medium text-seashell">Artisan Coffee</p>
                     <p className="text-sm text-seashell/60">$4.20</p>
@@ -171,7 +190,7 @@ export function Dashboard() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="bg-white/40 backdrop-blur-xl rounded-[2rem] p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+            className="bg-white/40 backdrop-blur-xl rounded-xl p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-display text-deep-slate flex items-center gap-2">
@@ -183,7 +202,7 @@ export function Dashboard() {
             </p>
 
             <div className="space-y-4">
-              <div className="bg-misty-rose/50 p-4 rounded-2xl border border-white flex justify-between items-center transition-all hover:bg-misty-rose/80 cursor-pointer">
+              <div className="bg-misty-rose/50 p-4 rounded-xl border border-white flex justify-between items-center transition-all hover:bg-misty-rose/80 cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="bg-white p-2.5 rounded-xl shadow-sm"><Coffee className="w-5 h-5 text-terracotta" /></div>
                   <div>
@@ -192,12 +211,12 @@ export function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-xl bg-green-500"></div>
                   <span className="text-deep-slate font-medium text-sm">Active</span>
                 </div>
               </div>
 
-              <div className="bg-misty-rose/50 p-4 rounded-2xl border border-white flex justify-between items-center transition-all hover:bg-misty-rose/80 cursor-pointer">
+              <div className="bg-misty-rose/50 p-4 rounded-xl border border-white flex justify-between items-center transition-all hover:bg-misty-rose/80 cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="bg-white p-2.5 rounded-xl shadow-sm"><HeartHandshake className="w-5 h-5 text-terracotta" /></div>
                   <div>
@@ -206,13 +225,13 @@ export function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-xl bg-green-500"></div>
                   <span className="text-deep-slate font-medium text-sm">Active</span>
                 </div>
               </div>
             </div>
 
-            <button className="w-full mt-8 py-4 bg-terracotta hover:bg-[#d1614a] text-white rounded-2xl font-medium transition-all shadow-lg shadow-terracotta/20 flex items-center justify-center gap-2">
+            <button className="w-full mt-8 py-4 bg-terracotta hover:bg-[#d1614a] text-white rounded-xl font-medium transition-all shadow-lg shadow-terracotta/20 flex items-center justify-center gap-2">
               Route Yield <ArrowRightLeft className="w-4 h-4" />
             </button>
           </motion.div>
@@ -232,12 +251,12 @@ function Pocket({ name, amount, percent }: { name: string, amount: number, perce
         </span>
         <span className="font-display text-2xl text-deep-slate">${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
       </div>
-      <div className="w-full h-2 bg-misty-rose rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-misty-rose rounded-xl overflow-hidden">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-          className="h-full bg-terracotta rounded-full relative" 
+          className="h-full bg-terracotta rounded-xl relative" 
         >
           <div className="absolute inset-0 bg-white/20 w-full h-full transform -skew-x-12 animate-[shimmer_2s_infinite]"></div>
         </motion.div>

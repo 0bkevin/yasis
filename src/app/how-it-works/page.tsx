@@ -1,186 +1,121 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Wallet, ArrowRight, Zap, RefreshCw, Layers } from "lucide-react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ArrowLeft, Wallet, Blocks, Network, Shield, Zap } from "lucide-react";
+import Link from "next/link";
 
 export default function HowItWorks() {
   return (
-    <div className="min-h-screen bg-seashell selection:bg-terracotta selection:text-white">
-      {/* Navigation */}
+    <div className="relative min-h-screen bg-seashell selection:bg-terracotta selection:text-white">
+      {/* Structural Grid Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+      </div>
+
       <nav className="fixed top-0 w-full z-50 bg-seashell/80 backdrop-blur-xl border-b border-deep-slate/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 bg-terracotta rounded flex items-center justify-center text-white font-display font-bold text-lg shadow-sm group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 bg-misty-rose rounded-xl flex items-center justify-center text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-white">
               <ArrowLeft className="w-4 h-4" />
             </div>
-            <span className="text-xl tracking-tighter text-deep-slate font-display font-bold">Oasis.</span>
+            <span className="text-xl tracking-tighter text-deep-slate font-display font-bold">Back to Home</span>
           </Link>
-          <ConnectButton label="Launch App" showBalance={false} />
         </div>
       </nav>
 
-      <main className="pt-32 pb-24 max-w-4xl mx-auto px-8">
-        
+      <main className="relative z-10 max-w-4xl mx-auto px-8 pt-40 pb-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-16 text-center"
+          className="mb-16"
         >
-          <h1 className="text-5xl md:text-6xl font-display font-bold text-deep-slate tracking-tight mb-6">
-            The Engine Behind Oasis
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-terracotta/20 bg-misty-rose/30 mb-6">
+            <Zap className="w-3.5 h-3.5 text-terracotta" />
+            <span className="text-xs font-bold text-terracotta tracking-widest uppercase">Technical Overview</span>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-display font-bold text-deep-slate tracking-tighter mb-6">
+            How Oasis Works.
           </h1>
           <p className="text-xl text-deep-slate/70 font-light leading-relaxed">
-            Understanding how we use the YO Protocol SDK to turn your idle stablecoins into a self-driving financial ecosystem.
+            A deep dive into the self-driving savings account architecture. Oasis bridges the gap between complex DeFi yield strategies and everyday financial utility.
           </p>
         </motion.div>
 
-        <div className="space-y-24">
+        <div className="space-y-12">
           
-          {/* Step 1 */}
-          <motion.section 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
-          >
-            <div className="order-2 md:order-1 bg-white p-8 rounded-3xl border border-deep-slate/10 shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-misty-rose/50 rounded-full blur-2xl -mr-10 -mt-10"></div>
-              <div className="flex flex-col gap-6 relative z-10">
-                <div className="flex justify-between items-center bg-seashell p-4 rounded-xl border border-deep-slate/5">
-                  <div className="flex items-center gap-3">
-                    <Wallet className="w-5 h-5 text-deep-slate" />
-                    <span className="font-medium text-deep-slate">Your Wallet</span>
-                  </div>
-                  <span className="font-display font-bold">5,000 USDC</span>
-                </div>
-                <div className="flex justify-center">
-                  <div className="w-8 h-8 rounded-full bg-misty-rose flex items-center justify-center text-terracotta">
-                    <ArrowRight className="w-4 h-4 rotate-90" />
-                  </div>
-                </div>
-                <div className="flex justify-between items-center bg-terracotta text-white p-4 rounded-xl shadow-md">
-                  <div className="flex items-center gap-3">
-                    <Layers className="w-5 h-5" />
-                    <span className="font-medium">YO Protocol Vault</span>
-                  </div>
-                  <span className="font-display font-bold">5,000 yoUSD</span>
-                </div>
-              </div>
-            </div>
-            <div className="order-1 md:order-2 space-y-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-misty-rose text-terracotta font-display font-bold text-xl mb-2">1</div>
-              <h2 className="text-3xl font-display font-bold text-deep-slate">Secure Deposit via yoGateway</h2>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                When you deposit USDC into Oasis, your funds aren't held by us. Using the <strong>@yo-protocol/core</strong> SDK, your transaction is routed directly through the official <code>yoGateway</code> smart contract into the <code>yoUSD</code> vault on the Base network. You receive ERC-4626 receipt tokens representing your deposit.
-              </p>
-            </div>
-          </motion.section>
+          <StepCard 
+            number="01"
+            icon={<Wallet className="w-6 h-6 text-terracotta" />}
+            title="Non-Custodial Escrow"
+            description="When you deposit USDC into Oasis, you are interacting with an ERC-4626 standard smart contract on the Base network. Oasis never holds your private keys and cannot access your funds. The protocol simply acts as an interface layer routing your capital into the underlying YO Protocol vaults."
+          />
 
-          {/* Step 2 */}
-          <motion.section 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
-          >
-            <div className="space-y-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-misty-rose text-terracotta font-display font-bold text-xl mb-2">2</div>
-              <h2 className="text-3xl font-display font-bold text-deep-slate">Auto-Rebalancing Yield</h2>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                Once inside the YO vault, your capital never sleeps. The YO engine continuously scans DeFi (across Aave, Compound, Morpho, etc.) and automatically rebalances your funds to the pools offering the highest risk-adjusted yield. 
-              </p>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                This process happens entirely on-chain without you needing to lift a finger, pay bridging fees, or monitor APY charts.
-              </p>
-            </div>
-            <div className="bg-deep-slate p-8 rounded-3xl border border-deep-slate/10 shadow-lg relative overflow-hidden">
-              <div className="flex flex-col gap-4 relative z-10">
-                <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 flex justify-between items-center text-white">
-                  <span className="font-medium">Aave V3 (Base)</span>
-                  <span className="text-sm bg-terracotta/20 text-terracotta px-2 py-1 rounded-md">4.2%</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 flex justify-between items-center text-white opacity-50">
-                  <span className="font-medium">Compound (Base)</span>
-                  <span className="text-sm bg-white/20 text-white px-2 py-1 rounded-md">3.1%</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-terracotta flex justify-between items-center text-white relative shadow-[0_0_15px_rgba(226,114,91,0.3)]">
-                  <span className="font-medium flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 text-terracotta animate-spin-slow" />
-                    Morpho Blue
-                  </span>
-                  <span className="text-sm bg-terracotta text-white px-2 py-1 rounded-md font-bold">8.5% APY</span>
-                </div>
-              </div>
-            </div>
-          </motion.section>
+          <StepCard 
+            number="02"
+            icon={<Blocks className="w-6 h-6 text-terracotta" />}
+            title="Automated Yield Engine (@yo-protocol)"
+            description="Your deposited capital is instantly routed to the YO Engine. This underlying protocol continuously monitors lending markets (like Aave and Compound) across multiple chains. It automatically rebalances your position into the pool offering the highest risk-adjusted APY, ensuring your capital is always working efficiently without manual intervention."
+          />
 
-          {/* Step 3 */}
-          <motion.section 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
-          >
-            <div className="order-2 md:order-1 bg-white p-8 rounded-3xl border border-deep-slate/10 shadow-lg">
-              <div className="space-y-6">
-                <div className="text-center pb-6 border-b border-deep-slate/10">
-                  <p className="text-sm text-deep-slate/60 font-medium uppercase tracking-widest mb-1">Generated Yield</p>
-                  <p className="text-4xl font-display font-bold text-terracotta">+$45.00</p>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center gap-4">
-                    <div className="w-1 h-12 bg-deep-slate/20 rounded-full"></div>
-                    <div className="flex-1 bg-seashell p-3 rounded-xl border border-deep-slate/5 flex justify-between">
-                      <span className="font-medium text-deep-slate text-sm">Netflix (Subscription)</span>
-                      <span className="text-terracotta font-bold text-sm">-$15.00</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-1 h-12 bg-deep-slate/20 rounded-full"></div>
-                    <div className="flex-1 bg-seashell p-3 rounded-xl border border-deep-slate/5 flex justify-between">
-                      <span className="font-medium text-deep-slate text-sm">Charity (Endowment)</span>
-                      <span className="text-terracotta font-bold text-sm">-$5.00</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-1 h-12 bg-deep-slate/20 rounded-full"></div>
-                    <div className="flex-1 bg-seashell p-3 rounded-xl border border-deep-slate/5 flex justify-between">
-                      <span className="font-medium text-deep-slate text-sm">Wealth (Compounding)</span>
-                      <span className="text-green-500 font-bold text-sm">+$25.00</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="order-1 md:order-2 space-y-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-misty-rose text-terracotta font-display font-bold text-xl mb-2">3</div>
-              <h2 className="text-3xl font-display font-bold text-deep-slate">Programmable Profit Routing</h2>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                Because your principal is safely generating 8-10% APY, you have a constant stream of "free money." Oasis reads your vault state using <code>getVaultState()</code> and allows you to program exactly where those profits go.
-              </p>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                When a router executes, we use the SDK's <code>prepareRedeem()</code> function to precisely withdraw only the yield portion of your balance, leaving your core principal untouched to continue compounding.
-              </p>
-            </div>
-          </motion.section>
+          <StepCard 
+            number="03"
+            icon={<Network className="w-6 h-6 text-terracotta" />}
+            title="Programmable Outflows"
+            description="As your principal generates yield, Oasis tracks that accrued value. You can configure 'Yield Routers'—logical rules that tell the smart contract what to do with the profit. Whether it's withdrawing $15/mo to pay for a subscription, or automatically transferring a percentage of yield to a public charity address, the routing happens seamlessly."
+          />
+
+          <StepCard 
+            number="04"
+            icon={<Shield className="w-6 h-6 text-terracotta" />}
+            title="Enterprise Security via SIWE"
+            description="To protect your mental accounting (Pockets) and Yield Router configurations, Oasis uses Sign-In With Ethereum (SIWE). This cryptographic standard ensures that only the verifiable owner of the wallet can modify the routing rules, preventing impersonation attacks while storing preferences securely in a Turso edge database."
+          />
 
         </div>
 
-        <div className="mt-32 text-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-24 p-8 bg-deep-slate text-seashell rounded-xl text-center"
+        >
+          <h3 className="text-3xl font-display font-bold mb-4">Ready to start earning?</h3>
+          <p className="text-seashell/60 mb-8 max-w-lg mx-auto">Connect your wallet and make your first deposit into the YO-powered escrow.</p>
           <Link 
             href="/dashboard" 
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-terracotta hover:bg-deep-slate text-white rounded-xl font-medium text-lg transition-all duration-300 shadow-xl shadow-terracotta/20 hover:shadow-deep-slate/20"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-terracotta hover:bg-white text-white hover:text-deep-slate rounded-xl font-medium text-lg transition-all duration-300"
           >
-            Start your Oasis <ArrowRight className="w-5 h-5" />
+            Launch App
           </Link>
-        </div>
-
+        </motion.div>
       </main>
-
     </div>
+  );
+}
+
+function StepCard({ number, icon, title, description }: { number: string, icon: React.ReactNode, title: string, description: string }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      className="bg-white/60 backdrop-blur-sm p-8 rounded-xl border border-white shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
+    >
+      <div className="absolute top-0 right-0 p-8 text-8xl font-display font-bold text-deep-slate/[0.02] group-hover:text-deep-slate/[0.05] transition-colors pointer-events-none select-none">
+        {number}
+      </div>
+      
+      <div className="flex flex-col md:flex-row gap-6 items-start relative z-10">
+        <div className="p-4 bg-misty-rose rounded-xl shrink-0">
+          {icon}
+        </div>
+        <div>
+          <h3 className="text-2xl font-display font-bold text-deep-slate mb-3">{title}</h3>
+          <p className="text-deep-slate/70 leading-relaxed font-light">
+            {description}
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 }

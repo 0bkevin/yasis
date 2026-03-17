@@ -1,26 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Wallet, Blocks, Layers, Network, ArrowUpRight, Zap } from "lucide-react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { ArrowRight, Wallet, Blocks, Network, ArrowUpRight, Zap, ShieldCheck, Cpu, Anchor, BarChart3, Repeat, Lock } from "lucide-react";
+import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 export default function Home() {
   const { isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
   const router = useRouter();
   const containerRef = useRef(null);
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end start"]
+    offset: ["start start", "end end"]
   });
 
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+  const heroY = useTransform(smoothProgress, [0, 0.2], [0, 150]);
+  const heroOpacity = useTransform(smoothProgress, [0, 0.15], [1, 0]);
 
   useEffect(() => {
     if (isConnected) {
@@ -29,187 +31,521 @@ export default function Home() {
   }, [isConnected, router]);
 
   return (
-    <div className="relative min-h-screen bg-seashell selection:bg-terracotta selection:text-white" ref={containerRef}>
+    <div className="relative min-h-screen bg-seashell selection:bg-terracotta selection:text-seashell font-sans overflow-hidden" ref={containerRef}>
       
-      {/* Structural Grid Background instead of blur blobs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-        <div className="absolute left-0 right-0 top-0 h-[500px] bg-gradient-to-b from-seashell via-seashell/90 to-transparent"></div>
-        <div className="absolute left-0 right-0 bottom-0 h-[500px] bg-gradient-to-t from-seashell via-seashell/90 to-transparent"></div>
+      {/* Abstract Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Fine geometric grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#2F4F4F08_1px,transparent_1px),linear-gradient(to_bottom,#2F4F4F08_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+        {/* Gradient Orbs */}
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-xl bg-misty-rose/40 blur-[120px] mix-blend-multiply"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-xl bg-terracotta/10 blur-[120px] mix-blend-multiply"></div>
+        <div className="absolute top-[40%] right-[10%] w-[30%] h-[30%] rounded-xl bg-deep-slate/5 blur-[100px] mix-blend-multiply"></div>
       </div>
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-seashell/80 backdrop-blur-xl border-b border-deep-slate/5">
-        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-terracotta rounded flex items-center justify-center text-white font-display font-bold text-lg shadow-sm">
+      <nav className="fixed top-0 w-full z-50 bg-seashell/60 backdrop-blur-2xl border-b border-deep-slate/10 transition-all duration-300">
+        <div className="flex justify-between items-center px-6 md:px-12 py-5 max-w-[1400px] mx-auto">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-deep-slate rounded-xl flex items-center justify-center text-seashell font-display font-semibold text-xl shadow-lg shadow-deep-slate/20">
               O
             </div>
-            <span className="text-xl tracking-tighter text-deep-slate font-display font-bold">Oasis.</span>
+            <span className="text-2xl tracking-tight text-deep-slate font-display font-bold italic">Oasis.</span>
           </div>
-          <div className="flex items-center gap-6">
-            <Link href="/how-it-works" className="text-deep-slate/70 hover:text-terracotta transition-colors text-sm font-medium hidden md:block">How it works</Link>
-            <Link href="https://docs.yo.xyz" target="_blank" className="text-deep-slate/70 hover:text-terracotta transition-colors text-sm font-medium hidden md:block">YO Engine</Link>
-            <ConnectButton label="Launch App" showBalance={false} />
+          <div className="flex items-center gap-8">
+            <Link href="#manifesto" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">Manifesto</Link>
+            <Link href="#architecture" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">Architecture</Link>
+            <Link href="https://docs.yo.xyz" target="_blank" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">YO Engine</Link>
+            <div className="pl-4 border-l border-deep-slate/20">
+              <ConnectButton.Custom>
+                {({ openConnectModal }) => (
+                  <button 
+                    onClick={() => isConnected ? router.push("/dashboard") : openConnectModal()}
+                    className="relative group overflow-hidden px-6 py-2.5 bg-terracotta text-seashell rounded-xl flex items-center justify-center gap-3 border border-terracotta shadow-[4px_4px_0px_0px_rgba(47,79,79,1)] hover:shadow-[2px_2px_0px_0px_rgba(47,79,79,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
+                  >
+                    <div className="absolute inset-0 bg-deep-slate transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0"></div>
+                    <span className="relative z-10 text-[10px] font-bold uppercase tracking-[0.2em]">{isConnected ? 'Dashboard' : 'Enter Oasis'}</span>
+                    <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
+                  </button>
+                )}
+              </ConnectButton.Custom>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 max-w-7xl mx-auto px-8 pt-40 lg:pt-48 pb-20">
-        <div className="flex flex-col items-center text-center">
-          
+      <main className="relative z-10 min-h-[100svh] flex flex-col justify-center pt-24 pb-20 overflow-hidden">
+        {/* Massive Background Marquee */}
+        <div className="absolute top-[40%] left-0 w-full overflow-hidden -z-10 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none flex mix-blend-color-burn">
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-terracotta/20 bg-misty-rose/30 mb-8"
+            animate={{ x: ["0%", "-50%"] }} 
+            transition={{ repeat: Infinity, ease: "linear", duration: 50 }}
+            className="flex whitespace-nowrap"
           >
-            <Zap className="w-3.5 h-3.5 text-terracotta" />
-            <span className="text-xs font-bold text-terracotta tracking-widest uppercase">Powered by YO SDK v1.0</span>
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            className="text-6xl md:text-8xl lg:text-[100px] font-display font-bold text-deep-slate leading-[0.95] tracking-tighter mb-8 max-w-5xl"
-          >
-            The self-driving <br/>
-            <span className="text-terracotta relative">
-              savings account.
-              <svg className="absolute w-full h-4 -bottom-2 left-0 text-misty-rose -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M0,5 Q50,15 100,5" stroke="currentColor" strokeWidth="8" fill="none" />
-              </svg>
-            </span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className="text-xl md:text-2xl text-deep-slate/70 leading-relaxed mb-12 max-w-2xl font-light"
-          >
-            Deposit your stablecoins. We route them to the highest risk-adjusted yield in DeFi. Then, you set the rules for what that free money pays for.
-          </motion.p>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
-          >
-            <Link 
-              href="/dashboard" 
-              className="group flex items-center justify-center gap-2 px-8 py-4 bg-terracotta hover:bg-deep-slate text-white rounded-xl font-medium text-lg transition-all duration-300 shadow-xl shadow-terracotta/20 hover:shadow-deep-slate/20"
-            >
-              Connect Wallet <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link 
-              href="https://docs.yo.xyz" 
-              target="_blank"
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-white border border-deep-slate/10 text-deep-slate hover:bg-misty-rose/50 rounded-xl font-medium text-lg transition-all duration-300"
-            >
-              Read YO Docs <ArrowUpRight className="w-4 h-4 text-deep-slate/50" />
-            </Link>
+            <h1 className="text-[25vw] font-display font-bold uppercase tracking-tighter text-deep-slate">
+              AUTONOMOUS YIELD • CAPITAL IN MOTION • AUTONOMOUS YIELD • CAPITAL IN MOTION • 
+            </h1>
           </motion.div>
         </div>
 
-        {/* Quick summary features graphic */}
-        <motion.div 
-          style={{ y: y1, opacity }}
-          className="mt-24 md:mt-32 relative max-w-5xl mx-auto"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white/50 backdrop-blur-sm border border-deep-slate/10 p-6 rounded-2xl shadow-xl shadow-deep-slate/5 hover:-translate-y-1 transition-transform">
-              <div className="w-10 h-10 bg-misty-rose rounded-xl flex items-center justify-center text-terracotta mb-4">
-                <Wallet className="w-5 h-5" />
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 items-center relative z-10">
+          
+          {/* Left Column: Typographic Focus */}
+          <div className="lg:col-span-7 flex flex-col items-start text-left">
+            <motion.div 
+              style={{ y: heroY, opacity: heroOpacity }}
+              className="w-full"
+            >
+              <div className="inline-flex items-center gap-4 px-4 py-2 border border-deep-slate/20 rounded-xl mb-10 bg-white/20 backdrop-blur-sm">
+                <div className="relative flex items-center justify-center w-3 h-3">
+                  <div className="absolute inset-0 bg-terracotta rounded-xl animate-ping opacity-75"></div>
+                  <div className="relative w-1.5 h-1.5 bg-terracotta rounded-xl"></div>
+                </div>
+                <span className="text-[10px] font-bold text-deep-slate tracking-[0.3em] uppercase">YO Engine Active</span>
               </div>
-              <h3 className="font-display font-bold text-lg mb-2">Non-Custodial Escrow</h3>
-              <p className="text-sm text-deep-slate/70 font-light leading-relaxed">Deposit your stablecoins securely. You maintain 100% control of your funds via ERC-4626 standard smart contracts.</p>
-            </div>
+              
+              <div className="relative mb-8">
+                <h1 className="text-6xl md:text-[90px] lg:text-[110px] font-sans font-medium text-deep-slate leading-[0.9] tracking-tighter uppercase relative z-10">
+                  <span className="block overflow-hidden pb-2"><motion.span initial={{ y: "100%" }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} className="block">CAPITAL,</motion.span></span>
+                  <span className="block overflow-hidden pb-4"><motion.span initial={{ y: "100%" }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} className="block font-display font-bold italic text-terracotta lowercase tracking-tight ml-8 md:ml-16">unbound.</motion.span></span>
+                </h1>
+                {/* Structural line */}
+                <motion.div 
+                  initial={{ height: 0 }}
+                  animate={{ height: "100%" }}
+                  transition={{ duration: 1, delay: 0.5, ease: "easeInOut" }}
+                  className="absolute -left-6 top-8 w-[2px] bg-terracotta/40 hidden md:block"
+                ></motion.div>
+              </div>
+              
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                className="text-lg md:text-2xl text-deep-slate/70 leading-relaxed max-w-xl font-light mb-12"
+              >
+                Transform idle stablecoins into an autonomous wealth engine. We route, compound, and deploy your yield with algorithmic precision.
+              </motion.p>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+                className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto"
+              >
+                <button 
+                  onClick={() => isConnected ? router.push("/dashboard") : openConnectModal?.()}
+                  className="relative group overflow-hidden px-10 py-5 bg-deep-slate text-seashell rounded-xl flex items-center justify-between gap-8 border border-deep-slate shadow-[8px_8px_0px_0px_rgba(226,114,91,1)] hover:shadow-[4px_4px_0px_0px_rgba(226,114,91,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
+                >
+                  <span className="relative z-10 text-xs font-bold uppercase tracking-[0.2em]">{isConnected ? 'Access Dashboard' : 'Deploy Vault'}</span>
+                  <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <Link href="#architecture" className="flex items-center gap-3 px-8 py-5 text-xs font-bold uppercase tracking-[0.2em] text-deep-slate hover:text-terracotta transition-colors group">
+                  View Specs
+                  <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Right Column: Creative Visual */}
+          <div className="lg:col-span-5 relative h-[500px] md:h-[600px] w-full mt-10 lg:mt-0 flex items-center justify-center">
             
-            <div className="bg-white/50 backdrop-blur-sm border border-deep-slate/10 p-6 rounded-2xl shadow-xl shadow-deep-slate/5 hover:-translate-y-1 transition-transform">
-              <div className="w-10 h-10 bg-misty-rose rounded-xl flex items-center justify-center text-terracotta mb-4">
-                <Blocks className="w-5 h-5" />
-              </div>
-              <h3 className="font-display font-bold text-lg mb-2">Automated Yield Engine</h3>
-              <p className="text-sm text-deep-slate/70 font-light leading-relaxed">The YO Protocol continuously rebalances your capital across DeFi to secure the highest risk-adjusted APY available.</p>
+            {/* Architectural Background */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+                className="w-[110%] aspect-square rounded-xl border-[1px] border-deep-slate/10"
+              ></motion.div>
+              <motion.div 
+                animate={{ rotate: -360 }}
+                transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
+                className="absolute w-[75%] aspect-square rounded-xl border-[1px] border-terracotta/20 border-dashed"
+              ></motion.div>
+              <div className="absolute w-[40%] aspect-square bg-gradient-to-tr from-terracotta/20 to-misty-rose/40 rounded-xl blur-[50px] animate-pulse"></div>
             </div>
 
-            <div className="bg-white/50 backdrop-blur-sm border border-deep-slate/10 p-6 rounded-2xl shadow-xl shadow-deep-slate/5 hover:-translate-y-1 transition-transform">
-              <div className="w-10 h-10 bg-misty-rose rounded-xl flex items-center justify-center text-terracotta mb-4">
-                <Network className="w-5 h-5" />
-              </div>
-              <h3 className="font-display font-bold text-lg mb-2">Programmable Outflows</h3>
-              <p className="text-sm text-deep-slate/70 font-light leading-relaxed">Set logical rules to automatically route your generated yield to pay for subscriptions, donate to charity, or auto-DCA.</p>
+            {/* Floating UI Composition */}
+            <div className="relative z-10 w-full max-w-sm" style={{ perspective: "1200px" }}>
+              
+              {/* Connecting Line */}
+              <motion.svg 
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 1.5, delay: 0.8, ease: "easeInOut" }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[200px] pointer-events-none -z-10 hidden sm:block" 
+                viewBox="0 0 200 200"
+              >
+                <path d="M 40 40 C 100 40, 100 160, 160 160" fill="none" stroke="currentColor" strokeWidth="2" className="text-terracotta/40" strokeDasharray="6 6" />
+                <circle cx="160" cy="160" r="4" className="fill-terracotta" />
+              </motion.svg>
+
+              {/* Card 1: Input */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40, x: -20, rotateZ: -5 }}
+                animate={{ opacity: 1, y: -60, x: -40, rotateZ: -2 }}
+                transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute left-0 sm:-left-12 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-xl border border-white/60 p-6 w-[280px] shadow-2xl shadow-deep-slate/10 rounded-xl"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/80 to-transparent rounded-xl blur-2xl -z-10"></div>
+                
+                <div className="flex justify-between items-center mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-seashell border border-deep-slate/10 flex items-center justify-center shadow-inner">
+                    <Wallet className="w-5 h-5 text-deep-slate" />
+                  </div>
+                  <div className="px-3 py-1 rounded-xl bg-deep-slate/5 border border-deep-slate/10 text-[10px] uppercase tracking-widest font-bold text-deep-slate/50">
+                    Step 01
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-[11px] font-bold tracking-[0.2em] text-deep-slate/50 uppercase mb-2">Your Principal</div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-4xl font-display font-medium text-deep-slate tracking-tight">USDC</div>
+                    <div className="w-2 h-2 rounded-xl bg-terracotta/50"></div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Card 2: Engine */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40, x: 20, rotateZ: 5 }}
+                animate={{ opacity: 1, y: 60, x: 40, rotateZ: 2 }}
+                transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute right-0 sm:-right-12 top-1/2 -translate-y-1/2 bg-deep-slate text-white p-7 w-[300px] shadow-2xl shadow-deep-slate/20 rounded-xl overflow-hidden border border-white/10"
+              >
+                {/* Internal Glow */}
+                <div className="absolute -top-20 -right-20 w-48 h-48 bg-terracotta/30 rounded-xl blur-[50px]"></div>
+                
+                <div className="flex justify-between items-center mb-8 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-terracotta flex items-center justify-center shadow-lg shadow-terracotta/30">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="px-3 py-1.5 rounded-xl bg-black/20 border border-white/10 text-[10px] uppercase tracking-widest font-bold text-white flex items-center gap-2 backdrop-blur-md">
+                    <div className="w-1.5 h-1.5 rounded-xl bg-terracotta animate-pulse shadow-[0_0_8px_rgba(226,114,91,0.8)]"></div>
+                    Yield Live
+                  </div>
+                </div>
+                
+                <div className="relative z-10">
+                  <div className="text-[11px] font-bold tracking-[0.2em] text-seashell/60 uppercase mb-2">Optimized APY</div>
+                  <div className="text-7xl font-display font-medium text-seashell flex items-baseline gap-1 tracking-tighter">
+                    14.2<span className="text-4xl text-terracotta">%</span>
+                  </div>
+                </div>
+                
+                <div className="mt-8 flex flex-wrap gap-2 relative z-10">
+                  <span className="text-[10px] font-bold tracking-widest px-3 py-1.5 bg-white/5 border border-white/10 text-white/80 rounded-xl">AAVE</span>
+                  <span className="text-[10px] font-bold tracking-widest px-3 py-1.5 bg-white/5 border border-white/10 text-white/80 rounded-xl">COMPOUND</span>
+                </div>
+              </motion.div>
+
+              {/* Decorative Tag */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
+                transition={{ 
+                  opacity: { duration: 0.8, delay: 1 },
+                  scale: { duration: 0.8, delay: 1 },
+                  y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className="absolute -top-10 sm:-top-16 right-10 bg-white/90 backdrop-blur-xl border border-white p-1 rounded-xl shadow-xl shadow-deep-slate/5"
+              >
+                <div className="border border-deep-slate/5 rounded-xl px-5 py-2.5 bg-seashell/50">
+                  <span className="text-[11px] font-bold text-terracotta tracking-[0.2em] uppercase flex items-center gap-2">
+                    <Repeat className="w-3.5 h-3.5" /> Auto-Routing
+                  </span>
+                </div>
+              </motion.div>
             </div>
           </div>
-          
-          <div className="text-center mt-12">
-            <Link href="/how-it-works" className="inline-flex items-center gap-2 text-terracotta font-medium hover:text-deep-slate transition-colors group">
-              See detailed technical explanation <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </motion.div>
+        </div>
       </main>
 
-      {/* Features Section */}
-      <section id="how-it-works" className="relative z-10 bg-white border-y border-deep-slate/10 py-32">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="mb-16 md:mb-24 text-center">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-deep-slate tracking-tight mb-6">How Oasis Works</h2>
-            <p className="text-xl text-deep-slate/60 max-w-2xl mx-auto font-light">Stop letting your idle capital lose value to inflation. Put it to work automatically.</p>
-          </div>
+      {/* The Manifesto / Problem Statement */}
+      <section id="manifesto" className="relative z-20 bg-deep-slate text-seashell py-32 md:py-48 rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden">
+        {/* Abstract shapes in background */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-[20%] right-[-5%] w-[40%] h-[60%] rounded-xl bg-terracotta/20 blur-[150px] mix-blend-screen"></div>
+          <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[60%] rounded-xl bg-misty-rose/10 blur-[150px] mix-blend-screen"></div>
+          
+          {/* Subtle grid lines */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:100px_100px]"></div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            <div className="space-y-6">
-              <div className="w-14 h-14 bg-misty-rose rounded-2xl flex items-center justify-center text-terracotta border border-terracotta/20 shadow-sm">
-                <Wallet className="w-7 h-7" />
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-24 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="md:col-span-7"
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-white/10 bg-white/5 mb-8">
+                <span className="text-[10px] font-bold text-seashell/60 tracking-[0.2em] uppercase">The Problem</span>
               </div>
-              <h3 className="text-2xl font-display font-bold text-deep-slate">1. Deposit Capital</h3>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                Connect your wallet and deposit USDC. Your principal remains 100% liquid and accessible at all times, secured by audited smart contracts.
+              
+              <h2 className="text-5xl md:text-7xl lg:text-[90px] font-sans font-medium leading-[0.9] tracking-tighter mb-8 uppercase">
+                IDLE CAPITAL <br/>
+                <span className="text-terracotta font-display italic lowercase tracking-tight">is decaying</span>
+              </h2>
+              <p className="text-xl md:text-2xl text-seashell/60 font-light leading-relaxed mb-8 max-w-2xl">
+                Traditional finance offers fractions of a percent while extracting your value. DeFi offers massive yields but requires constant monitoring, bridging, and gas fees.
               </p>
+              <p className="text-xl md:text-2xl text-seashell font-medium leading-relaxed max-w-2xl">
+                Oasis bridges this gap. A set-and-forget protocol that captures the power of decentralized yield and converts it into automated, programmable cashflow.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              className="md:col-span-5 relative"
+            >
+              <div className="aspect-square flex items-center justify-center relative p-8">
+                {/* Orbital rings */}
+                <div className="absolute inset-0 rounded-xl border-[1px] border-terracotta/20 border-dashed animate-[spin_60s_linear_infinite]"></div>
+                <div className="absolute inset-8 rounded-xl border-[1px] border-seashell/10 animate-[spin_40s_linear_infinite_reverse]"></div>
+                <div className="absolute inset-16 rounded-xl border-[1px] border-seashell/5 animate-[spin_80s_linear_infinite]"></div>
+                
+                <div className="bg-deep-slate/50 backdrop-blur-3xl border border-white/10 rounded-xl p-8 w-full max-w-sm relative z-10 shadow-2xl">
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-terracotta/20 rounded-xl blur-[40px]"></div>
+                  
+                  <div className="flex items-center gap-4 mb-10 pb-8 border-b border-white/10 relative z-10">
+                    <div className="w-14 h-14 rounded-xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-terracotta" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-seashell tracking-[0.2em] uppercase text-xs mb-1">TradFi vs Oasis</h4>
+                      <p className="text-seashell/50 text-[10px] uppercase tracking-widest">1 Year Projection</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-8 relative z-10">
+                    <div>
+                      <div className="flex justify-between items-end mb-3">
+                        <span className="text-seashell/60 text-xs font-bold uppercase tracking-widest">Legacy Savings</span>
+                        <span className="font-mono text-sm">0.45%</span>
+                      </div>
+                      <div className="h-1.5 bg-seashell/10 rounded-xl overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          whileInView={{ width: "5%" }}
+                          transition={{ duration: 1, delay: 0.5 }}
+                          className="h-full bg-seashell/30"
+                        ></motion.div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-end mb-3">
+                        <span className="text-terracotta font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                          <Zap className="w-3 h-3" /> Oasis Vault
+                        </span>
+                        <span className="font-mono text-lg text-terracotta">~14.2%</span>
+                      </div>
+                      <div className="h-1.5 bg-seashell/10 rounded-xl overflow-hidden relative">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          whileInView={{ width: "85%" }}
+                          transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                          className="h-full bg-terracotta relative overflow-hidden"
+                        >
+                          <div className="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
+                        </motion.div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Architecture / How it Works */}
+      <section id="architecture" className="relative z-10 bg-seashell py-32 md:py-48 overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 -left-64 w-[500px] h-[500px] bg-terracotta/5 rounded-xl blur-[100px]"></div>
+          <div className="absolute bottom-1/4 -right-64 w-[600px] h-[600px] bg-deep-slate/5 rounded-xl blur-[120px]"></div>
+        </div>
+
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+          <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-24 md:mb-32">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-deep-slate/10 bg-white/50 backdrop-blur-md mb-8">
+              <span className="text-[10px] font-bold text-deep-slate/60 tracking-[0.2em] uppercase">Architecture</span>
             </div>
             
-            <div className="space-y-6">
-              <div className="w-14 h-14 bg-misty-rose rounded-2xl flex items-center justify-center text-terracotta border border-terracotta/20 shadow-sm">
-                <Blocks className="w-7 h-7" />
-              </div>
-              <h3 className="text-2xl font-display font-bold text-deep-slate">2. Generate Yield</h3>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                Oasis utilizes the <strong>@yo-protocol/core</strong> SDK to instantly route your funds into YO's auto-rebalancing vaults, securing the highest risk-adjusted APY in DeFi.
-              </p>
-            </div>
+            <h2 className="text-5xl md:text-7xl lg:text-[90px] font-sans font-medium text-deep-slate leading-[0.9] tracking-tighter mb-8 uppercase">
+              THE ENGINE <br/>
+              <span className="text-terracotta font-display italic lowercase tracking-tight">unpacked</span>
+            </h2>
+            <p className="text-xl md:text-2xl text-deep-slate/60 font-light max-w-2xl leading-relaxed">
+              We abstracted the complexity of DeFi into three primitive actions. Non-custodial, trustless, and fully automated.
+            </p>
+          </div>
 
-            <div className="space-y-6">
-              <div className="w-14 h-14 bg-misty-rose rounded-2xl flex items-center justify-center text-terracotta border border-terracotta/20 shadow-sm">
-                <Network className="w-7 h-7" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connecting Line - Now more architectural */}
+            <div className="hidden md:block absolute top-[6.5rem] left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-transparent via-deep-slate/10 to-transparent z-0"></div>
+            <div className="hidden md:block absolute top-[6.5rem] left-[15%] right-[15%] h-[2px] bg-[linear-gradient(90deg,transparent_50%,rgba(47,79,79,0.2)_50%)] bg-[length:20px_2px] z-0"></div>
+
+            {/* Step 1 */}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6 }}
+              className="relative z-10 group"
+            >
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 text-[150px] font-display font-bold text-deep-slate/[0.02] -z-10 group-hover:text-terracotta/[0.03] transition-colors duration-500 leading-none">01</div>
+              <div className="bg-white/60 backdrop-blur-xl border border-deep-slate/10 p-10 rounded-xl shadow-[0_20px_40px_-15px_rgba(47,79,79,0.05)] h-full hover:shadow-[0_30px_60px_-15px_rgba(47,79,79,0.1)] hover:-translate-y-2 transition-all duration-500">
+                <div className="w-20 h-20 bg-seashell rounded-xl border border-deep-slate/10 flex items-center justify-center text-deep-slate mb-10 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                  <Anchor className="w-8 h-8" />
+                </div>
+                <div className="text-[10px] font-bold text-terracotta uppercase tracking-[0.2em] mb-4">Stage One</div>
+                <h3 className="text-3xl font-sans font-medium text-deep-slate mb-6 tracking-tight">Secure Principal</h3>
+                <p className="text-deep-slate/60 font-light leading-relaxed mb-8 text-lg">
+                  Deposit USDC into our ERC-4626 standard smart contracts. Your capital remains 100% liquid and you maintain complete custody.
+                </p>
+                <ul className="space-y-4 border-t border-deep-slate/10 pt-8">
+                  <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-deep-slate/70"><ShieldCheck className="w-4 h-4 text-terracotta" /> Audited Contracts</li>
+                  <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-deep-slate/70"><Lock className="w-4 h-4 text-terracotta" /> 100% Non-Custodial</li>
+                </ul>
               </div>
-              <h3 className="text-2xl font-display font-bold text-deep-slate">3. Route the Profits</h3>
-              <p className="text-deep-slate/70 leading-relaxed font-light">
-                Set up "Yield Routers." Tell Oasis to automatically withdraw your generated yield to pay for subscriptions, buy ETH, or donate to charity.
-              </p>
-            </div>
+            </motion.div>
+
+            {/* Step 2 */}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative z-10 group"
+            >
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 text-[150px] font-display font-bold text-deep-slate/[0.02] -z-10 group-hover:text-terracotta/[0.03] transition-colors duration-500 leading-none">02</div>
+              <div className="bg-deep-slate text-seashell p-10 rounded-xl shadow-[0_30px_60px_-15px_rgba(47,79,79,0.3)] h-full hover:-translate-y-2 transition-all duration-500 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-terracotta/20 rounded-xl blur-[60px] group-hover:bg-terracotta/30 transition-colors duration-500"></div>
+                <div className="w-20 h-20 bg-terracotta rounded-xl flex items-center justify-center text-white mb-10 shadow-lg shadow-terracotta/30 relative z-10 group-hover:scale-110 transition-transform duration-500">
+                  <Cpu className="w-8 h-8" />
+                </div>
+                <div className="text-[10px] font-bold text-terracotta uppercase tracking-[0.2em] mb-4 relative z-10">Stage Two</div>
+                <h3 className="text-3xl font-sans font-medium text-seashell mb-6 tracking-tight relative z-10">Algorithmic Yield</h3>
+                <p className="text-seashell/70 font-light leading-relaxed mb-8 text-lg relative z-10">
+                  The YO Protocol continuously scans the DeFi landscape and automatically rebalances your position to capture the highest risk-adjusted yield.
+                </p>
+                <ul className="space-y-4 border-t border-white/10 pt-8 relative z-10">
+                  <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-seashell/80"><Zap className="w-4 h-4 text-terracotta" /> Auto-rebalancing</li>
+                  <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-seashell/80"><Network className="w-4 h-4 text-terracotta" /> Multi-protocol</li>
+                </ul>
+              </div>
+            </motion.div>
+
+            {/* Step 3 */}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="relative z-10 group"
+            >
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 text-[150px] font-display font-bold text-deep-slate/[0.02] -z-10 group-hover:text-terracotta/[0.03] transition-colors duration-500 leading-none">03</div>
+              <div className="bg-white/60 backdrop-blur-xl border border-deep-slate/10 p-10 rounded-xl shadow-[0_20px_40px_-15px_rgba(47,79,79,0.05)] h-full hover:shadow-[0_30px_60px_-15px_rgba(47,79,79,0.1)] hover:-translate-y-2 transition-all duration-500">
+                <div className="w-20 h-20 bg-seashell rounded-xl border border-deep-slate/10 flex items-center justify-center text-deep-slate mb-10 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                  <Repeat className="w-8 h-8" />
+                </div>
+                <div className="text-[10px] font-bold text-terracotta uppercase tracking-[0.2em] mb-4">Stage Three</div>
+                <h3 className="text-3xl font-sans font-medium text-deep-slate mb-6 tracking-tight">Programmable Outflows</h3>
+                <p className="text-deep-slate/60 font-light leading-relaxed mb-8 text-lg">
+                  Define rules for your generated yield. Automatically swap profits to ETH, pay for subscriptions, or donate to a public goods fund without lifting a finger.
+                </p>
+                <ul className="space-y-4 border-t border-deep-slate/10 pt-8">
+                  <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-deep-slate/70"><div className="w-1.5 h-1.5 rounded-xl bg-terracotta"></div> Pay Subscriptions</li>
+                  <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-deep-slate/70"><div className="w-1.5 h-1.5 rounded-xl bg-terracotta"></div> Auto DCA</li>
+                  <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-deep-slate/70"><div className="w-1.5 h-1.5 rounded-xl bg-terracotta"></div> Donations</li>
+                </ul>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Tech Stack Banner */}
-      <section id="infrastructure" className="bg-deep-slate text-seashell py-20 border-b-8 border-terracotta relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-        <div className="max-w-7xl mx-auto px-8 text-center relative z-10">
-          <p className="text-sm font-bold uppercase tracking-widest text-misty-rose mb-12">Built on Enterprise-Grade Infrastructure</p>
-          <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-80 mix-blend-luminosity">
-            <span className="text-3xl font-display font-bold text-white">Base</span>
-            <span className="text-3xl font-display font-bold text-white">YO Protocol</span>
-            <span className="text-3xl font-display font-bold text-white">ERC-4626</span>
-            <span className="text-3xl font-display font-bold text-white">Wagmi</span>
+      {/* Visual Break / Quote */}
+      <section className="py-32 border-y border-deep-slate/10 bg-white relative overflow-hidden">
+        {/* Typographic background pattern */}
+        <div className="absolute inset-0 opacity-[0.02] flex items-center justify-center pointer-events-none select-none overflow-hidden">
+          <div className="text-[300px] font-display font-bold leading-none -tracking-[0.05em] whitespace-nowrap">
+            OASIS OASIS OASIS
           </div>
+        </div>
+        
+        <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="w-12 h-12 bg-terracotta rounded-xl mx-auto mb-10"></div>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-sans font-medium text-deep-slate leading-[1.1] tracking-tighter uppercase">
+              "We are transforming yield from an abstract number on a screen into a <span className="font-display italic text-terracotta lowercase tracking-tight">tangible utility.</span>"
+            </h2>
+          </motion.div>
         </div>
       </section>
 
+      {/* Footer / CTA */}
+      <footer className="bg-deep-slate text-seashell py-32 relative overflow-hidden">
+        {/* Subtle grid lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:100px_100px]"></div>
+        
+        {/* Ambient glow */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] bg-terracotta/10 rounded-t-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 flex flex-col items-center text-center">
+          <div className="w-20 h-20 border border-white/20 rounded-xl flex items-center justify-center text-seashell font-display font-bold text-4xl mb-12 shadow-2xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
+            <span className="relative z-10 italic">O</span>
+          </div>
+          
+          <h2 className="text-6xl md:text-[100px] font-sans font-medium leading-[0.9] tracking-tighter mb-10 uppercase">
+            ENTER THE <span className="font-display italic text-terracotta lowercase tracking-tight">oasis.</span>
+          </h2>
+          
+          <p className="text-xl md:text-2xl text-seashell/60 font-light max-w-2xl mb-16">
+            Connect your wallet to start putting your idle capital to work. 
+          </p>
+          
+          <ConnectButton.Custom>
+            {({ openConnectModal }) => (
+              <button 
+                onClick={() => isConnected ? router.push("/dashboard") : openConnectModal()}
+                className="relative group overflow-hidden px-12 py-6 bg-terracotta text-seashell rounded-xl flex items-center justify-center gap-6 border border-terracotta shadow-[8px_8px_0px_0px_rgba(255,245,238,0.2)] hover:shadow-[4px_4px_0px_0px_rgba(255,245,238,0.2)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
+              >
+                <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0"></div>
+                <span className="relative z-10 text-sm font-bold uppercase tracking-[0.2em]">{isConnected ? 'Go to Dashboard' : 'Launch Application'}</span>
+                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
+              </button>
+            )}
+          </ConnectButton.Custom>
+
+          <div className="w-full h-[1px] bg-white/10 mt-40 mb-10"></div>
+          
+          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] font-bold text-seashell/50 tracking-[0.2em] uppercase">
+            <span>© 2026 Oasis Protocol.</span>
+            <div className="flex gap-10">
+              <Link href="https://docs.yo.xyz" className="hover:text-terracotta transition-colors flex items-center gap-2">Documentation <ArrowUpRight className="w-3 h-3" /></Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
