@@ -1,20 +1,47 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { History, ArrowDownLeft, ArrowUpRight, ArrowRightLeft, ExternalLink } from "lucide-react";
-import { useAccount } from "wagmi";
+import { History, ArrowDownLeft, ArrowUpRight, Plus, Loader2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createUserTransaction, getUserTransactions } from "@/actions/user-data";
+import { useState } from "react";
 
 export default function TransactionsPage() {
-  const { address } = useAccount();
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [direction, setDirection] = useState<"in" | "out">("in");
 
-  // Expanded mock data
-  const txs = [
-    { id: 1, type: "deposit", amount: 500, date: "Mar 14, 2024", status: "completed", hash: "0x123...", title: "Manual Boost" },
-    { id: 2, type: "route", amount: 15, name: "Netflix Sub", date: "Mar 10, 2024", status: "completed", hash: "0x456...", title: "Internal Yield Route" },
-    { id: 3, type: "route", amount: 50, name: "GiveDirectly", date: "Mar 01, 2024", status: "completed", hash: "0x789...", title: "External Endowment" },
-    { id: 4, type: "sweep", amount: 0.80, name: "Coffee", date: "Feb 28, 2024", status: "completed", hash: "0xabc...", title: "Spare Change Sweep" },
-    { id: 5, type: "deposit", amount: 1000, date: "Feb 15, 2024", status: "completed", hash: "0xdef...", title: "Initial Deposit" },
-  ];
+  const { data: txs = [], isLoading } = useQuery({
+    queryKey: ["user-transactions", "history"],
+    queryFn: () => getUserTransactions(200),
+  });
+
+  const addManualTransaction = useMutation({
+    mutationFn: createUserTransaction,
+    onSuccess: () => {
+      setTitle("");
+      setAmount("");
+      queryClient.invalidateQueries({ queryKey: ["user-transactions"] });
+    },
+  });
+
+  const handleAddManualTransaction = () => {
+    const parsedAmount = Number(amount);
+    if (!title.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      return;
+    }
+
+    addManualTransaction.mutate({
+      kind: "manual",
+      title: title.trim(),
+      details: "User entered transaction",
+      amountUSDC: parsedAmount,
+      direction,
+      status: "completed",
+      source: "user",
+    });
+  };
 
   return (
     <div className="space-y-10">
@@ -24,8 +51,47 @@ export default function TransactionsPage() {
           History
         </h1>
         <p className="text-lg text-deep-slate/60 font-light max-w-2xl">
-          A complete ledger of your deposits, sweeps, and automated yield routing events.
+          A complete ledger of deposits, sweeps, yield allocations into aquifers, and external routing events.
         </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/40 backdrop-blur-xl rounded-xl p-6 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+      >
+        <h3 className="text-lg font-bold text-deep-slate mb-4">Add Manual Transaction</h3>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title (e.g., Payroll Deposit)"
+            className="md:col-span-5 bg-white border border-deep-slate/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-terracotta/30"
+          />
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Amount (USDC)"
+            className="md:col-span-3 bg-white border border-deep-slate/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-terracotta/30"
+          />
+          <select
+            value={direction}
+            onChange={(e) => setDirection(e.target.value as "in" | "out")}
+            className="md:col-span-2 bg-white border border-deep-slate/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-terracotta/30"
+          >
+            <option value="in">Money In</option>
+            <option value="out">Money Out</option>
+          </select>
+          <button
+            onClick={handleAddManualTransaction}
+            disabled={addManualTransaction.isPending}
+            className="md:col-span-2 px-4 py-2.5 bg-terracotta text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#d1614a] transition-all disabled:opacity-50"
+          >
+            {addManualTransaction.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            Add
+          </button>
+        </div>
       </motion.div>
 
       <motion.div 
@@ -45,51 +111,52 @@ export default function TransactionsPage() {
               </tr>
             </thead>
             <tbody>
-              {txs.map((tx, i) => (
-                <motion.tr 
-                  key={tx.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="border-b border-deep-slate/5 hover:bg-white/60 transition-colors group"
-                >
-                  <td className="p-6">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2.5 rounded-xl ${
-                        tx.type === 'deposit' ? 'bg-green-100 text-green-600' : 
-                        tx.type === 'sweep' ? 'bg-amber-100 text-amber-600' :
-                        'bg-misty-rose text-terracotta'
-                      }`}>
-                        {tx.type === 'deposit' ? <ArrowDownLeft className="w-4 h-4" /> : 
-                         tx.type === 'sweep' ? <ArrowRightLeft className="w-4 h-4" /> : 
-                         <ArrowUpRight className="w-4 h-4" />}
-                      </div>
-                      <span className="font-bold text-deep-slate">{tx.title}</span>
-                    </div>
-                  </td>
-                  <td className="p-6 text-deep-slate/70 font-medium">
-                    {tx.name ? `Routed to ${tx.name}` : `From Wallet ${address?.slice(0,6)}...`}
-                  </td>
-                  <td className="p-6 text-deep-slate/60 text-sm">
-                    {tx.date}
-                  </td>
-                  <td className="p-6 text-right">
-                    <p className={`font-display font-bold text-lg ${tx.type === 'deposit' ? 'text-green-600' : 'text-deep-slate'}`}>
-                      {tx.type === 'deposit' ? '+' : '-'}${tx.amount.toFixed(2)}
-                    </p>
-                  </td>
-                  <td className="p-6">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-xl">
-                        Completed
-                      </span>
-                      <button className="text-[10px] text-deep-slate/40 group-hover:text-terracotta transition-colors flex items-center gap-1">
-                        {tx.hash} <ExternalLink className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-deep-slate/60">Loading your transactions...</td>
+                </tr>
+              ) : txs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-deep-slate/60">No transactions yet. Add one above or start using Oasis features.</td>
+                </tr>
+              ) : (
+                txs.map((tx, i) => {
+                  const isInflow = tx.direction === "in";
+                  const date = tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : "-";
+                  return (
+                    <motion.tr 
+                      key={tx.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="border-b border-deep-slate/5 hover:bg-white/60 transition-colors"
+                    >
+                      <td className="p-6">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2.5 rounded-xl ${isInflow ? 'bg-green-100 text-green-600' : 'bg-misty-rose text-terracotta'}`}>
+                            {isInflow ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                          </div>
+                          <span className="font-bold text-deep-slate">{tx.title}</span>
+                        </div>
+                      </td>
+                      <td className="p-6 text-deep-slate/70 font-medium">
+                        {tx.details || tx.kind}
+                      </td>
+                      <td className="p-6 text-deep-slate/60 text-sm">{date}</td>
+                      <td className="p-6 text-right">
+                        <p className={`font-display font-bold text-lg ${isInflow ? 'text-green-600' : 'text-deep-slate'}`}>
+                          {isInflow ? '+' : '-'}${tx.amountUSDC.toFixed(2)}
+                        </p>
+                      </td>
+                      <td className="p-6 text-center">
+                        <span className={`text-xs font-bold px-2 py-1 rounded-xl ${tx.status === 'completed' ? 'bg-green-100 text-green-700' : tx.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                    </motion.tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

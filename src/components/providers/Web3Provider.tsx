@@ -1,46 +1,58 @@
 "use client";
 
-import '@rainbow-me/rainbowkit/styles.css';
-import { getDefaultConfig, RainbowKitProvider, lightTheme, RainbowKitAuthenticationProvider } from '@rainbow-me/rainbowkit';
-import { WagmiProvider } from 'wagmi';
-import { base } from 'wagmi/chains';
+import { WagmiProvider, cookieToInitialState, type Config } from 'wagmi';
+import { base } from '@reown/appkit/networks';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { YieldProvider } from '@yo-protocol/react';
 import { ReactNode, useState } from 'react';
-import { useSiweAdapter } from './useSiweAdapter';
+import { createAppKit } from '@reown/appkit/react';
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { siweConfig } from './siweConfig';
 
-const config = getDefaultConfig({
-  appName: 'Oasis - Self-Driving Savings',
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c2e8a1a364d9f688e16e6d7d6f510ccb',
-  chains: [base],
+import { AppKitNetwork } from '@reown/appkit/networks';
+
+const projectId = 'e355085c48c97d70659555a2a21f9ce9'
+const networks = [base] as [AppKitNetwork, ...AppKitNetwork[]];
+
+export const wagmiAdapter = new WagmiAdapter({
+  projectId,
+  networks,
   ssr: true,
 });
 
-export function Providers({ children }: { children: ReactNode }) {
+createAppKit({
+  adapters: [wagmiAdapter],
+  projectId,
+  networks,
+  siweConfig,
+  metadata: {
+    name: 'Oasis - Self-Driving Savings',
+    description: 'Self-driving savings with Oasis',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://oasis.xyz',
+    icons: ['https://oasis.xyz/icon.png']
+  },
+  themeMode: 'light',
+  themeVariables: {
+    '--w3m-accent': '#E2725B',
+  },
+  features: {
+    analytics: true,
+    email: false,
+    socials: [],
+  },
+  allWallets: "SHOW",
+});
+
+export function Providers({ children, cookies }: { children: ReactNode; cookies: string | null }) {
   const [queryClient] = useState(() => new QueryClient());
-  const { adapter, status } = useSiweAdapter();
+  const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies);
 
   return (
-    <WagmiProvider config={config}>
+    <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitAuthenticationProvider
-          adapter={adapter}
-          status={status}
-        >
-          <RainbowKitProvider
-            theme={lightTheme({
-              accentColor: '#E2725B', 
-              accentColorForeground: '#FFF5EE', 
-              borderRadius: 'medium',
-              fontStack: 'system',
-              overlayBlur: 'small',
-            })}
-          >
-            <YieldProvider partnerId={101} defaultSlippageBps={50}>
-              {children}
-            </YieldProvider>
-          </RainbowKitProvider>
-        </RainbowKitAuthenticationProvider>
+        <YieldProvider partnerId={101} defaultSlippageBps={50}>
+          {children}
+        </YieldProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { SiweMessage } from 'siwe';
 import { getSession } from '@/lib/session';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, getAddress } from 'viem';
 import { base } from 'viem/chains';
+import { db } from '@/db';
+import { users } from '@/db/schema';
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +18,21 @@ export async function POST(request: Request) {
     if (siweMessage.nonce !== session.nonce) {
       console.log("Nonce mismatch:", { expected: session.nonce, got: siweMessage.nonce });
       return NextResponse.json({ message: 'Invalid nonce.' }, { status: 422 });
+    }
+
+    // Security: Check domain to prevent phishing attacks (EIP-4361 standard)
+    const host = request.headers.get('host') || new URL(request.url).host;
+    if (siweMessage.domain !== host) {
+      console.log("Domain mismatch:", { expected: host, got: siweMessage.domain });
+      // Temporary loosening: AppKit might send domain with port (localhost:3000) while headers host is localhost:3000 or vice versa
+      if (!host.includes(siweMessage.domain) && !siweMessage.domain.includes(host.split(':')[0])) {
+         return NextResponse.json({ message: 'Invalid domain.' }, { status: 422 });
+      }
+    }
+
+    // Security: Check expiration time if provided
+    if (siweMessage.expirationTime && new Date(siweMessage.expirationTime).getTime() < Date.now()) {
+      return NextResponse.json({ message: 'Signature expired.' }, { status: 422 });
     }
 
     // Since you are heavily using Base, Smart Contract Wallets (like Coinbase Smart Wallet)
@@ -37,7 +54,20 @@ export async function POST(request: Request) {
        return NextResponse.json({ message: 'Invalid signature.' }, { status: 400 });
     }
 
-    session.address = siweMessage.address;
+    // Normalize the address to checksum format before saving to database
+    const normalizedAddress = getAddress(siweMessage.address);
+
+    // Save user to database if they don't exist
+    try {
+      await db.insert(users).values({ 
+        walletAddress: normalizedAddress 
+      }).onConflictDoNothing({ target: users.walletAddress });
+    } catch (dbErr: any) {
+      console.error("Database insert error:", dbErr);
+      throw dbErr;
+    }
+
+    session.address = normalizedAddress;
     session.nonce = undefined; // clear nonce after successful login
     await session.save();
 

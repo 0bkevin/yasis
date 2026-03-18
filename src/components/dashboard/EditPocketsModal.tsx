@@ -1,163 +1,302 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, Plus, Trash2, Save, Loader2 } from "lucide-react";
-import { updatePockets } from "@/actions/user-config";
+import { updateAquifers } from "@/actions/user-config";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface PocketData {
+interface AquiferData {
   id: string;
   name: string;
-  percentage: number;
+  type: "reserve" | "subscription" | "goal" | "shared" | "charity" | "tax";
+  status: "draft" | "active" | "paused" | "completed" | "locked" | "unlocked";
+  allocationPercent: number;
+  targetAmountUSDC?: number | null;
+  targetMonthlyOutflowUSDC?: number | null;
+  targetDate?: string | null;
+  unlockAt?: string | null;
+  overflowMode: "compound" | "general_balance" | "donation";
+  color?: string | null;
+  notes?: string | null;
+  requiredPrincipalSnapshotUSDC?: number | null;
+  estimatedApyBps?: number | null;
 }
 
-export function EditPocketsModal({ 
-  isOpen, 
-  onClose, 
-  initialPockets 
-}: { 
-  isOpen: boolean, 
-  onClose: () => void, 
-  initialPockets: PocketData[] 
+const emptyAquifer = (): AquiferData => ({
+  id: crypto.randomUUID(),
+  name: "New Aquifer",
+  type: "reserve",
+  status: "active",
+  allocationPercent: 0,
+  targetAmountUSDC: null,
+  targetMonthlyOutflowUSDC: null,
+  targetDate: null,
+  unlockAt: null,
+  overflowMode: "general_balance",
+  color: null,
+  notes: null,
+  requiredPrincipalSnapshotUSDC: null,
+  estimatedApyBps: 0,
+});
+
+export function EditPocketsModal({
+  isOpen,
+  onClose,
+  initialPockets,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  initialPockets: AquiferData[];
 }) {
-  const [pockets, setPockets] = useState<PocketData[]>([]);
+  const [aquifers, setAquifers] = useState<AquiferData[]>(initialPockets.length > 0 ? initialPockets : []);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
-  // Sync state when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setPockets(
-        initialPockets.length > 0 
-          ? [...initialPockets] 
-          : [{ id: crypto.randomUUID(), name: "Liquid Spending", percentage: 100 }]
-      );
-      setError("");
-    }
-  }, [isOpen, initialPockets]);
-
-  const totalPercentage = pockets.reduce((acc, p) => acc + p.percentage, 0);
+  const totalPercentage = aquifers.reduce((acc, aquifer) => acc + aquifer.allocationPercent, 0);
 
   const mutation = useMutation({
-    mutationFn: updatePockets,
+    mutationFn: updateAquifers,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-config'] });
+      queryClient.invalidateQueries({ queryKey: ["user-config"] });
       onClose();
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       setError(e.message);
-    }
+    },
   });
 
-  const addPocket = () => {
-    setPockets([...pockets, { id: crypto.randomUUID(), name: "New Pocket", percentage: 0 }]);
+  const addAquifer = () => {
+    setAquifers((current) => [...current, emptyAquifer()]);
   };
 
-  const removePocket = (id: string) => {
-    setPockets(pockets.filter(p => p.id !== id));
+  const removeAquifer = (id: string) => {
+    setAquifers((current) => current.filter((aquifer) => aquifer.id !== id));
   };
 
-  const updatePocket = (id: string, field: keyof PocketData, value: string | number) => {
-    setPockets(pockets.map(p => p.id === id ? { ...p, [field]: value } : p));
+  const updateAquifer = (id: string, field: keyof AquiferData, value: string | number | null) => {
+    setAquifers((current) => current.map((aquifer) => aquifer.id === id ? { ...aquifer, [field]: value } : aquifer));
   };
 
-  const handleSave = () => {
-    if (Math.abs(totalPercentage - 100) > 0.01) {
-      setError("Total allocation must equal exactly 100%");
+    const handleSave = () => {
+    if (totalPercentage > 100) {
+      setError("Total allocation cannot exceed 100%.");
       return;
     }
+
+    const finalAquifers = [...aquifers];
+
+    // Auto-balance if under 100%
+    if (totalPercentage > 0 && totalPercentage < 100) {
+      const remainder = 100 - totalPercentage;
+      const reserveIndex = finalAquifers.findIndex(a => a.type === "reserve");
+      
+      if (reserveIndex >= 0) {
+        finalAquifers[reserveIndex].allocationPercent += remainder;
+      } else {
+        finalAquifers.push({
+          ...emptyAquifer(),
+          name: "General Reserve",
+          allocationPercent: remainder,
+        });
+      }
+    }
+
     setError("");
-    mutation.mutate(pockets);
+    mutation.mutate(finalAquifers);
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-deep-slate/40 backdrop-blur-sm p-4"
         >
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="bg-seashell w-full max-w-lg rounded-xl p-6 shadow-2xl border border-white/50"
+            className="bg-seashell w-full max-w-4xl rounded-xl p-6 shadow-2xl border border-white/50"
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-display font-bold">Edit Allocations</h2>
+              <h2 className="text-2xl font-display font-bold">Design Your Aquifers</h2>
               <button onClick={onClose} className="p-2 hover:bg-misty-rose rounded-xl transition-colors">
                 <X className="w-5 h-5 text-deep-slate/50" />
               </button>
             </div>
 
             <div className="space-y-4 max-h-[60vh] overflow-y-auto px-2">
-              {pockets.map((pocket) => (
-                <div key={pocket.id} className="bg-white p-4 rounded-xl border border-deep-slate/10 space-y-3">
-                  <div className="flex justify-between items-center gap-4">
-                    <input 
-                      type="text" 
-                      value={pocket.name}
-                      onChange={(e) => updatePocket(pocket.id, 'name', e.target.value)}
-                      className="font-bold text-lg bg-transparent focus:outline-none focus:border-b-2 border-terracotta w-full"
-                      placeholder="Pocket Name"
-                    />
-                    <button 
-                      onClick={() => removePocket(pocket.id)}
+              {aquifers.map((aquifer) => (
+                <div key={aquifer.id} className="bg-white p-5 rounded-xl border border-deep-slate/10 space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={aquifer.name}
+                        onChange={(e) => updateAquifer(aquifer.id, "name", e.target.value)}
+                        className="font-bold text-lg bg-transparent border border-deep-slate/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                        placeholder="Aquifer Name"
+                      />
+                      <select
+                        value={aquifer.type}
+                        onChange={(e) => updateAquifer(aquifer.id, "type", e.target.value as AquiferData["type"])}
+                        className="border border-deep-slate/10 rounded-xl px-3 py-2 bg-white"
+                      >
+                        <option value="reserve">Reserve</option>
+                        <option value="subscription">Subscription</option>
+                        <option value="goal">Goal</option>
+                        <option value="shared">Shared</option>
+                        <option value="charity">Giving</option>
+                        <option value="tax">Tax Shield</option>
+                      </select>
+                    </div>
+                    <button
+                      onClick={() => removeAquifer(aquifer.id)}
                       className="text-red-400 hover:text-red-600 transition-colors p-1"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <input 
-                      type="range" 
-                      min="0" max="100" step="1"
-                      value={pocket.percentage}
-                      onChange={(e) => updatePocket(pocket.id, 'percentage', Number(e.target.value))}
-                      className="w-full accent-terracotta"
-                    />
-                    <div className="flex items-center gap-1 w-20">
-                      <input 
-                        type="number" 
-                        value={pocket.percentage}
-                        onChange={(e) => updatePocket(pocket.id, 'percentage', Number(e.target.value))}
-                        className="w-full bg-misty-rose/30 rounded-xl p-1 text-center font-bold"
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Allocation</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={aquifer.allocationPercent}
+                          onChange={(e) => updateAquifer(aquifer.id, "allocationPercent", Number(e.target.value))}
+                          className="w-full h-2 bg-misty-rose rounded-lg appearance-none cursor-pointer accent-terracotta"
+                        />
+                        <input
+                          type="number"
+                          value={aquifer.allocationPercent}
+                          onChange={(e) => updateAquifer(aquifer.id, "allocationPercent", Number(e.target.value))}
+                          className="w-20 bg-misty-rose/30 rounded-xl p-2 text-center font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Target Amount</label>
+                      <input
+                        type="number"
+                        value={aquifer.targetAmountUSDC ?? ""}
+                        onChange={(e) => updateAquifer(aquifer.id, "targetAmountUSDC", e.target.value ? Number(e.target.value) : null)}
+                        className="w-full border border-deep-slate/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                        placeholder="Optional"
                       />
-                      <span className="font-bold text-deep-slate/50">%</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Monthly Yield Goal</label>
+                      <input
+                        type="number"
+                        value={aquifer.targetMonthlyOutflowUSDC ?? ""}
+                        onChange={(e) => updateAquifer(aquifer.id, "targetMonthlyOutflowUSDC", e.target.value ? Number(e.target.value) : null)}
+                        className="w-full border border-deep-slate/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                        placeholder="Optional"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Planning APY %</label>
+                      <input
+                        type="number"
+                        value={aquifer.estimatedApyBps ? aquifer.estimatedApyBps / 100 : ""}
+                        onChange={(e) => updateAquifer(aquifer.id, "estimatedApyBps", e.target.value ? Number(e.target.value) * 100 : null)}
+                        className="w-full border border-deep-slate/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                        placeholder="e.g. 8.5"
+                      />
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Status</label>
+                      <select
+                        value={aquifer.status}
+                        onChange={(e) => updateAquifer(aquifer.id, "status", e.target.value as AquiferData["status"])}
+                        className="w-full border border-deep-slate/10 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                      >
+                        <option value="draft">Draft</option>
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                        <option value="completed">Completed</option>
+                        <option value="locked">Locked</option>
+                        <option value="unlocked">Unlocked</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Overflow</label>
+                      <select
+                        value={aquifer.overflowMode}
+                        onChange={(e) => updateAquifer(aquifer.id, "overflowMode", e.target.value as AquiferData["overflowMode"])}
+                        className="w-full border border-deep-slate/10 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                      >
+                        <option value="general_balance">General Balance</option>
+                        <option value="compound">Auto-compound</option>
+                        <option value="donation">Donation Route</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Goal Date</label>
+                      <input
+                        type="date"
+                        value={aquifer.targetDate ?? ""}
+                        onChange={(e) => updateAquifer(aquifer.id, "targetDate", e.target.value || null)}
+                        className="w-full border border-deep-slate/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <textarea
+                    value={aquifer.notes ?? ""}
+                    onChange={(e) => updateAquifer(aquifer.id, "notes", e.target.value)}
+                    className="w-full border border-deep-slate/10 rounded-xl px-3 py-2 min-h-20 focus:outline-none focus:ring-2 focus:ring-terracotta/30 transition-all"
+                    placeholder="Optional notes about this aquifer's goal or behavior"
+                  />
                 </div>
               ))}
             </div>
 
             <div className="mt-6 space-y-4">
-              <button 
-                onClick={addPocket}
+              <button
+                onClick={addAquifer}
                 className="w-full py-3 border-2 border-dashed border-deep-slate/20 rounded-xl text-deep-slate/60 font-bold hover:bg-white/50 hover:border-deep-slate/40 transition-all flex justify-center items-center gap-2"
               >
-                <Plus className="w-4 h-4" /> Add Pocket
+                <Plus className="w-4 h-4" /> Add Aquifer
               </button>
 
-              <div className="bg-white p-4 rounded-xl border border-deep-slate/10 flex justify-between items-center">
-                <span className="font-bold text-deep-slate/70">Total Allocation</span>
-                <span className={`font-display text-xl font-bold ${Math.abs(totalPercentage - 100) > 0.01 ? 'text-red-500' : 'text-green-500'}`}>
+                            <div className="bg-white p-4 rounded-xl border border-deep-slate/10 flex justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="font-bold text-deep-slate/70">Total Allocation</span>
+                  {totalPercentage < 100 && totalPercentage > 0 && (
+                    <span className="text-[10px] uppercase text-deep-slate/50">Auto-balancing remaining {(100 - totalPercentage).toFixed(0)}% to Reserve</span>
+                  )}
+                </div>
+                <span className={`font-display text-xl font-bold ${totalPercentage > 100 ? "text-red-500" : "text-green-500"}`}>
                   {totalPercentage.toFixed(0)}%
                 </span>
               </div>
 
               {error && <p className="text-red-500 text-sm font-medium text-center">{error}</p>}
 
-              <button 
+              <button
                 onClick={handleSave}
-                disabled={mutation.isPending || Math.abs(totalPercentage - 100) > 0.01}
+                disabled={mutation.isPending || totalPercentage > 100}
                 className="w-full py-4 bg-terracotta text-white rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-[#d1614a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {mutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                Save Changes
+                Save Aquifers
               </button>
             </div>
           </motion.div>

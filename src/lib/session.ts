@@ -11,6 +11,7 @@ export const sessionOptions = {
   cookieName: 'oasis_siwe',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7, // 1 week
   },
 };
 

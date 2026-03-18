@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
-    "@rainbow-me/rainbowkit": "^2.2.10",
+    "@reown/appkit": "^1.8.19",
+    "@reown/appkit-adapter-wagmi": "^1.8.19",
+    "@reown/appkit-siwe": "^1.8.19",
     "@tanstack/react-query": "^5.90.21",
     "@yo-protocol/core": "^1.0.9",
     "@yo-protocol/react": "^1.0.6",
@@ -18,6 +20,7 @@
     "drizzle-orm": "^0.45.1",
     "encoding": "^0.1.13",
     "framer-motion": "^12.36.0",
+    "idb": "^8.0.3",
     "iron-session": "^8.0.4",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",

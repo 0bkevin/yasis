@@ -1,13 +1,12 @@
 "use client";
 
 import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAuthenticationStatus } from "@/components/providers/useAuthStatus";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import { LayoutDashboard, WalletCards, HeartHandshake, History, Coffee, Compass } from "lucide-react";
+import {  LayoutDashboard, WalletCards, HeartHandshake, History, Coffee, Shield, Trophy , Info } from "lucide-react";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const { isConnected } = useAccount();
@@ -30,18 +29,19 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             Connect and sign in to enter Oasis.
           </p>
         </div>
-        <ConnectButton />
+        <appkit-button />
       </div>
     );
   }
 
   const navItems = [
     { name: 'Overview', href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, exact: true },
-    { name: 'Pockets', href: '/dashboard/pockets', icon: <WalletCards className="w-4 h-4" /> },
+    { name: 'Aquifers', href: '/dashboard/aquifers', icon: <WalletCards className="w-4 h-4" /> },
+    { name: 'Prize Pool', href: '/dashboard/prize-pool', icon: <Trophy className="w-4 h-4" /> },
+    { name: 'Tax Shield', href: '/dashboard/tax-shield', icon: <Shield className="w-4 h-4" /> },
     { name: 'Donations', href: '/dashboard/donations', icon: <HeartHandshake className="w-4 h-4" /> },
     { name: 'Spare Change', href: '/dashboard/spare-change', icon: <Coffee className="w-4 h-4" /> },
     { name: 'History', href: '/dashboard/transactions', icon: <History className="w-4 h-4" /> },
-    { name: 'Explore', href: '/dashboard/explore', icon: <Compass className="w-4 h-4" /> },
   ];
 
   return (
@@ -55,12 +55,18 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             </div>
             <h1 className="text-xl tracking-widest text-deep-slate uppercase text-sm font-semibold">Oasis</h1>
           </Link>
-          <div className="md:hidden">
-            <ConnectButton showBalance={false} />
+          <div className="flex md:hidden items-center gap-3">
+            <Link href="/dashboard/explore" className="p-2 bg-white/60 hover:bg-white border border-deep-slate/10 rounded-xl transition-all text-deep-slate/50 hover:text-terracotta shadow-sm" title="Protocol Information">
+              <Info className="w-4 h-4" />
+            </Link>
+            <appkit-button />
           </div>
         </div>
-        <div className="hidden md:block">
-          <ConnectButton showBalance={false} />
+        <div className="hidden md:flex items-center gap-4">
+          <Link href="/dashboard/explore" className="p-2.5 bg-white/60 hover:bg-white border border-deep-slate/10 rounded-xl transition-all text-deep-slate/50 hover:text-terracotta shadow-sm" title="Protocol Information">
+            <Info className="w-4 h-4" />
+          </Link>
+          <appkit-button />
         </div>
       </header>
 
@@ -88,17 +94,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </nav>
 
       {/* Content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {children}
+      </motion.div>
     </div>
   );
 }

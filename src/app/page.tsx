@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowRight, Wallet, Blocks, Network, ArrowUpRight, Zap, ShieldCheck, Cpu, Anchor, BarChart3, Repeat, Lock } from "lucide-react";
-import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAppKit } from "@reown/appkit/react";
 import { useAccount } from "wagmi";
+import { useAuthenticationStatus } from "@/components/providers/useAuthStatus";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const { isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
+  const authStatus = useAuthenticationStatus();
+  const { open } = useAppKit();
   const router = useRouter();
   const containerRef = useRef(null);
+  const [isFullyConnected, setIsFullyConnected] = useState(false);
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -25,10 +28,25 @@ export default function Home() {
   const heroOpacity = useTransform(smoothProgress, [0, 0.15], [1, 0]);
 
   useEffect(() => {
-    if (isConnected) {
+    const isAuth = isConnected && authStatus === 'authenticated';
+    if (isFullyConnected !== isAuth) {
+      setIsFullyConnected(isAuth);
+    }
+  }, [isConnected, authStatus, isFullyConnected]);
+
+  useEffect(() => {
+    if (isFullyConnected) {
       router.push("/dashboard");
     }
-  }, [isConnected, router]);
+  }, [isFullyConnected, router]);
+
+  const handleAction = () => {
+    if (isFullyConnected) {
+      router.push("/dashboard");
+    } else {
+      open();
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-seashell selection:bg-terracotta selection:text-seashell font-sans overflow-hidden" ref={containerRef}>
@@ -57,18 +75,14 @@ export default function Home() {
             <Link href="#architecture" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">Architecture</Link>
             <Link href="https://docs.yo.xyz" target="_blank" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">YO Engine</Link>
             <div className="pl-4 border-l border-deep-slate/20">
-              <ConnectButton.Custom>
-                {({ openConnectModal }) => (
-                  <button 
-                    onClick={() => isConnected ? router.push("/dashboard") : openConnectModal()}
-                    className="relative group overflow-hidden px-6 py-2.5 bg-terracotta text-seashell rounded-xl flex items-center justify-center gap-3 border border-terracotta shadow-[4px_4px_0px_0px_rgba(47,79,79,1)] hover:shadow-[2px_2px_0px_0px_rgba(47,79,79,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
-                  >
-                    <div className="absolute inset-0 bg-deep-slate transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0"></div>
-                    <span className="relative z-10 text-[10px] font-bold uppercase tracking-[0.2em]">{isConnected ? 'Dashboard' : 'Enter Oasis'}</span>
-                    <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
-                  </button>
-                )}
-              </ConnectButton.Custom>
+              <button 
+                onClick={handleAction}
+                className="cursor-pointer relative group overflow-hidden px-6 py-2.5 bg-terracotta text-seashell rounded-xl flex items-center justify-center gap-3 border border-terracotta shadow-[4px_4px_0px_0px_rgba(47,79,79,1)] hover:shadow-[2px_2px_0px_0px_rgba(47,79,79,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
+              >
+                <div className="absolute inset-0 bg-deep-slate transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0"></div>
+                <span className="relative z-10 text-[10px] font-bold uppercase tracking-[0.2em]">{isFullyConnected ? 'Dashboard' : 'Enter Oasis'}</span>
+                <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
+              </button>
             </div>
           </div>
         </div>
@@ -125,7 +139,7 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
                 className="text-lg md:text-2xl text-deep-slate/70 leading-relaxed max-w-xl font-light mb-12"
               >
-                Transform idle stablecoins into an autonomous wealth engine. We route, compound, and deploy your yield with algorithmic precision.
+                Transform idle stablecoins into a yield-aware cashflow workspace. Today, Oasis helps you deposit into YO, track earned yield, and manage donation routes and planning targets from one place.
               </motion.p>
               
               <motion.div 
@@ -135,10 +149,10 @@ export default function Home() {
                 className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto"
               >
                 <button 
-                  onClick={() => isConnected ? router.push("/dashboard") : openConnectModal?.()}
-                  className="relative group overflow-hidden px-10 py-5 bg-deep-slate text-seashell rounded-xl flex items-center justify-between gap-8 border border-deep-slate shadow-[8px_8px_0px_0px_rgba(226,114,91,1)] hover:shadow-[4px_4px_0px_0px_rgba(226,114,91,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
+                  onClick={handleAction}
+                  className="cursor-pointer group overflow-hidden px-10 py-5 bg-deep-slate text-seashell rounded-xl flex items-center justify-between gap-8 border border-deep-slate shadow-[8px_8px_0px_0px_rgba(226,114,91,1)] hover:shadow-[4px_4px_0px_0px_rgba(226,114,91,1)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
                 >
-                  <span className="relative z-10 text-xs font-bold uppercase tracking-[0.2em]">{isConnected ? 'Access Dashboard' : 'Deploy Vault'}</span>
+                  <span className="relative z-10 text-xs font-bold uppercase tracking-[0.2em]">{isFullyConnected ? 'Access Dashboard' : 'Deploy Vault'}</span>
                   <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                 </button>
                 
@@ -149,6 +163,7 @@ export default function Home() {
               </motion.div>
             </motion.div>
           </div>
+
 
           {/* Right Column: Creative Visual */}
           <div className="lg:col-span-5 relative h-[500px] md:h-[600px] w-full mt-10 lg:mt-0 flex items-center justify-center">
@@ -297,7 +312,7 @@ export default function Home() {
                 Traditional finance offers fractions of a percent while extracting your value. DeFi offers massive yields but requires constant monitoring, bridging, and gas fees.
               </p>
               <p className="text-xl md:text-2xl text-seashell font-medium leading-relaxed max-w-2xl">
-                Oasis bridges this gap. A set-and-forget protocol that captures the power of decentralized yield and converts it into automated, programmable cashflow.
+                Oasis bridges this gap. The current product turns decentralized yield into a guided dashboard for deposits, tracking, and configurable routing, with deeper automation still being rolled out in phases.
               </p>
             </motion.div>
 
@@ -388,7 +403,7 @@ export default function Home() {
               <span className="text-terracotta font-display italic lowercase tracking-tight">unpacked</span>
             </h2>
             <p className="text-xl md:text-2xl text-deep-slate/60 font-light max-w-2xl leading-relaxed">
-              We abstracted the complexity of DeFi into three primitive actions. Non-custodial, trustless, and fully automated.
+              We abstract the complexity of DeFi into three primitive actions. Non-custodial today, increasingly automated over time.
             </p>
           </div>
 
@@ -439,7 +454,7 @@ export default function Home() {
                 <div className="text-[10px] font-bold text-terracotta uppercase tracking-[0.2em] mb-4 relative z-10">Stage Two</div>
                 <h3 className="text-3xl font-sans font-medium text-seashell mb-6 tracking-tight relative z-10">Algorithmic Yield</h3>
                 <p className="text-seashell/70 font-light leading-relaxed mb-8 text-lg relative z-10">
-                  The YO Protocol continuously scans the DeFi landscape and automatically rebalances your position to capture the highest risk-adjusted yield.
+                  Oasis currently integrates with the YO vault layer for deposits, balances, and yield visibility. More detailed strategy controls and live routing analytics are still being added to the product.
                 </p>
                 <ul className="space-y-4 border-t border-white/10 pt-8 relative z-10">
                   <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-seashell/80"><Zap className="w-4 h-4 text-terracotta" /> Auto-rebalancing</li>
@@ -464,7 +479,7 @@ export default function Home() {
                 <div className="text-[10px] font-bold text-terracotta uppercase tracking-[0.2em] mb-4">Stage Three</div>
                 <h3 className="text-3xl font-sans font-medium text-deep-slate mb-6 tracking-tight">Programmable Outflows</h3>
                 <p className="text-deep-slate/60 font-light leading-relaxed mb-8 text-lg">
-                  Define rules for your generated yield. Automatically swap profits to ETH, pay for subscriptions, or donate to a public goods fund without lifting a finger.
+                  Define rules for your generated yield. Donation routes can already be executed from available yield, while subscription and broader automation flows remain part of the next product phases.
                 </p>
                 <ul className="space-y-4 border-t border-deep-slate/10 pt-8">
                   <li className="flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase text-deep-slate/70"><div className="w-1.5 h-1.5 rounded-xl bg-terracotta"></div> Pay Subscriptions</li>
@@ -495,7 +510,7 @@ export default function Home() {
           >
             <div className="w-12 h-12 bg-terracotta rounded-xl mx-auto mb-10"></div>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-sans font-medium text-deep-slate leading-[1.1] tracking-tighter uppercase">
-              "We are transforming yield from an abstract number on a screen into a <span className="font-display italic text-terracotta lowercase tracking-tight">tangible utility.</span>"
+              &quot;We are transforming yield from an abstract number on a screen into a <span className="font-display italic text-terracotta lowercase tracking-tight">tangible utility.</span>&quot;
             </h2>
           </motion.div>
         </div>
@@ -523,20 +538,17 @@ export default function Home() {
             Connect your wallet to start putting your idle capital to work. 
           </p>
           
-          <ConnectButton.Custom>
-            {({ openConnectModal }) => (
-              <button 
-                onClick={() => isConnected ? router.push("/dashboard") : openConnectModal()}
-                className="relative group overflow-hidden px-12 py-6 bg-terracotta text-seashell rounded-xl flex items-center justify-center gap-6 border border-terracotta shadow-[8px_8px_0px_0px_rgba(255,245,238,0.2)] hover:shadow-[4px_4px_0px_0px_rgba(255,245,238,0.2)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
-              >
-                <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0"></div>
-                <span className="relative z-10 text-sm font-bold uppercase tracking-[0.2em]">{isConnected ? 'Go to Dashboard' : 'Launch Application'}</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
-              </button>
-            )}
-          </ConnectButton.Custom>
+          <button 
+            onClick={handleAction}
+            className="cursor-pointer relative group overflow-hidden px-12 py-6 bg-terracotta text-seashell rounded-xl flex items-center justify-center gap-6 border border-terracotta shadow-[8px_8px_0px_0px_rgba(255,245,238,0.2)] hover:shadow-[4px_4px_0px_0px_rgba(255,245,238,0.2)] hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
+          >
+            <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0"></div>
+            <span className="relative z-10 text-sm font-bold uppercase tracking-[0.2em]">{isFullyConnected ? 'Go to Dashboard' : 'Launch Application'}</span>
+            <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
+          </button>
 
           <div className="w-full h-[1px] bg-white/10 mt-40 mb-10"></div>
+
           
           <div className="w-full flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] font-bold text-seashell/50 tracking-[0.2em] uppercase">
             <span>© 2026 Oasis Protocol.</span>

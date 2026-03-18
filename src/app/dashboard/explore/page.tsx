@@ -1,16 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useVaultState, useTotalTvl } from "@yo-protocol/react";
+import { useTotalTvl, useVaults } from "@yo-protocol/react";
 import { Shield, TrendingUp, DollarSign } from "lucide-react";
-import { formatUnits } from "viem";
 import { VAULTS } from "@yo-protocol/core";
 
 export default function ExplorePage() {
-  const { vaultState, isLoading: stateLoading } = useVaultState(VAULTS.yoUSD.address);
+  const { vaults, isLoading: stateLoading } = useVaults();
   const { tvl, isLoading: tvlLoading } = useTotalTvl();
 
-  const currentApy = vaultState ? ((Number(vaultState.exchangeRate) / 1e18 - 1) * 100).toFixed(2) : '8.50';
+  const vaultAddress = VAULTS.yoUSD.address;
+  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase());
+  const currentApy = currentVaultStats?.yield?.['7d'] ? (parseFloat(currentVaultStats.yield['7d']) * 100).toFixed(2) : '8.50';
 
   return (
     <div className="space-y-10">
@@ -18,13 +19,19 @@ export default function ExplorePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-4xl font-display text-deep-slate tracking-tighter font-bold mb-4">
-          Protocol Analytics
+        <h1 className="text-4xl font-display text-deep-slate tracking-tighter font-bold mb-4 flex items-center gap-3">
+          <Shield className="w-8 h-8 text-terracotta" /> Protocol Information
         </h1>
         <p className="text-lg text-deep-slate/60 font-light max-w-2xl">
-          View the global performance of the underlying yield optimization vaults.
+          Learn how Oasis generates yield in the background. Your deposits are routed through the YO Protocol, which automatically manages capital across decentralized lending markets.
         </p>
       </motion.div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-900">
+        <p className="text-sm leading-relaxed">
+          Live data on this page includes the YO vault APY and global TVL. The strategy cards and risk labels below are illustrative to show the types of lending markets the underlying protocol utilizes.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
@@ -40,7 +47,7 @@ export default function ExplorePage() {
         <StatCard 
           title="Risk Rating" 
           value="A+" 
-          subtitle="Exponential.fi Verified"
+          subtitle="Illustrative diligence marker"
           icon={<Shield className="w-5 h-5" />} 
         />
       </div>
@@ -51,7 +58,10 @@ export default function ExplorePage() {
         transition={{ delay: 0.2 }}
         className="bg-white/40 backdrop-blur-xl rounded-xl p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
       >
-        <h3 className="text-2xl font-display text-deep-slate font-bold mb-6">Active Strategies on Base</h3>
+        <h3 className="text-2xl font-display text-deep-slate font-bold mb-2">Illustrative Strategy Snapshot</h3>
+        <p className="text-sm text-deep-slate/50 mb-6">
+          These cards describe the types of strategies the product may route through, but they are not yet sourced from live per-strategy analytics in this UI.
+        </p>
         <div className="space-y-4">
           <div className="bg-white p-6 rounded-xl border border-deep-slate/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition-all">
             <div>
@@ -59,7 +69,7 @@ export default function ExplorePage() {
                 <h4 className="font-bold text-lg text-deep-slate">Aave v3 USDC Supply</h4>
                 <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-xl">Active</span>
               </div>
-              <p className="text-deep-slate/60 text-sm">Providing liquidity to Aave's core lending markets on Base.</p>
+              <p className="text-deep-slate/60 text-sm">Providing liquidity to Aave&apos;s core lending markets on Base.</p>
             </div>
             <div className="text-right">
               <p className="text-sm font-bold text-deep-slate/50 uppercase tracking-wider mb-1">Target APY</p>
@@ -73,7 +83,7 @@ export default function ExplorePage() {
                 <h4 className="font-bold text-lg text-deep-slate">Compound v3 USDC</h4>
                 <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-xl">Active</span>
               </div>
-              <p className="text-deep-slate/60 text-sm">Supplying stablecoins to Compound's isolated lending pairs.</p>
+              <p className="text-deep-slate/60 text-sm">Supplying stablecoins to Compound&apos;s isolated lending pairs.</p>
             </div>
             <div className="text-right">
               <p className="text-sm font-bold text-deep-slate/50 uppercase tracking-wider mb-1">Target APY</p>

@@ -54,14 +54,14 @@ export default function HowItWorks() {
             number="02"
             icon={<Blocks className="w-6 h-6 text-terracotta" />}
             title="Automated Yield Engine (@yo-protocol)"
-            description="Your deposited capital is instantly routed to the YO Engine. This underlying protocol continuously monitors lending markets (like Aave and Compound) across multiple chains. It automatically rebalances your position into the pool offering the highest risk-adjusted APY, ensuring your capital is always working efficiently without manual intervention."
+            description="Your deposited capital is routed into the YO vault integration used by Oasis. The current app surfaces live YO position and vault metrics, while deeper strategy-by-strategy controls and analytics are still being expanded in the product experience."
           />
 
           <StepCard 
             number="03"
             icon={<Network className="w-6 h-6 text-terracotta" />}
             title="Programmable Outflows"
-            description="As your principal generates yield, Oasis tracks that accrued value. You can configure 'Yield Routers'—logical rules that tell the smart contract what to do with the profit. Whether it's withdrawing $15/mo to pay for a subscription, or automatically transferring a percentage of yield to a public charity address, the routing happens seamlessly."
+            description="As your principal generates yield, Oasis tracks accrued value and lets you configure Yield Routers. In the current app, donation routers can be executed using available yield, while subscription routers act as planning targets until automated merchant payout flows are built."
           />
 
           <StepCard 
