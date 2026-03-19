@@ -121,14 +121,15 @@ export function PrizePoolPage() {
             A no-loss lottery powered by pooled yield. Deposit principal to enter. The principal remains yours to withdraw anytime, but the generated yield is pooled into a weekly jackpot won by a single participant.
           </p>
         </div>
-        <button
+        {/* Testing porpuses only we should use a chainlink integration for this */}
+        {/* <button
           onClick={() => drawMutation.mutate()}
           disabled={drawMutation.isPending}
           className="px-4 py-2 bg-white border border-deep-slate/10 text-deep-slate text-sm font-bold rounded-xl hover:bg-misty-rose transition-colors flex items-center gap-2 shadow-sm"
         >
           {drawMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-terracotta" />}
           Test Draw Winner
-        </button>
+        </button> */}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">

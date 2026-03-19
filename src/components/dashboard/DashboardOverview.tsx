@@ -574,6 +574,7 @@ export function DashboardOverview() {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-display text-deep-slate font-bold flex items-center gap-2">
                   Tax Shield Active
+                  <span className="text-[9px] px-1.5 py-0.5 bg-terracotta/10 text-terracotta rounded-lg font-bold">SOON</span>
                 </h3>
                 <Link href="/dashboard/tax-shield" className="text-sm font-medium text-terracotta hover:underline">Manage</Link>
               </div>

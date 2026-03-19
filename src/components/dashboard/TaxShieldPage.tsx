@@ -67,9 +67,9 @@ export function TaxShieldPage() {
         <h1 className="text-4xl font-display font-bold text-deep-slate flex items-center gap-3">
           <Shield className="w-8 h-8 text-terracotta" /> Tax Shield
         </h1>
-        <p className="text-deep-slate/60 mt-3 max-w-2xl">
-          Automatically intercept incoming deposits and quarantine a portion for your tax obligations.
-          Your tax reserve stays safe, and the yield it generates flows back to your general balance.
+        <p className="text-deep-slate/60 mt-3 max-w-2xl leading-relaxed">
+          Configure rules to automatically intercept incoming deposits and quarantine a portion for your tax obligations.
+          <br /><span className="text-terracotta font-bold mt-1 inline-block">Note: Automatic withholding is coming soon. The reserve currently tracks historical allocations only.</span>
         </p>
       </div>
 
@@ -101,12 +101,15 @@ export function TaxShieldPage() {
           <div className="bg-white rounded-xl border border-deep-slate/10 p-5 space-y-5">
             <div className="flex items-center justify-between border-b border-deep-slate/5 pb-5">
               <div>
-                <p className="font-bold text-deep-slate">Enable Auto-Routing</p>
-                <p className="text-sm text-deep-slate/50 mt-1">Intercept future deposits automatically</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-deep-slate">Enable Auto-Routing</p>
+                  <span className="px-2 py-0.5 bg-misty-rose text-[10px] font-bold text-terracotta rounded-lg uppercase tracking-wider">Coming Soon</span>
+                </div>
+                <p className="text-sm text-deep-slate/50 mt-1">Intercept future deposits automatically (currently in simulation mode)</p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer group">
-                <input type="checkbox" className="sr-only peer" checked={isEnabled} onChange={(e) => setIsEnabledState(e.target.checked)} />
-                <div className="w-11 h-6 bg-deep-slate/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-terracotta"></div>
+              <label className="relative inline-flex items-center cursor-not-allowed group">
+                <input type="checkbox" className="sr-only peer" checked={isEnabled} disabled onChange={(e) => setIsEnabledState(e.target.checked)} />
+                <div className="w-11 h-6 bg-deep-slate/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-terracotta/50"></div>
               </label>
             </div>
 
