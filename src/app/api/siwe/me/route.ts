@@ -3,8 +3,6 @@ import { getSession } from '@/lib/session';
 
 export async function GET() {
   const session = await getSession();
-  
-  console.log("SIWE Me - Current Session Address:", session.address);
 
   if (!session.address) {
     return NextResponse.json(

@@ -18,8 +18,10 @@ import {
   getAquiferTypeLabel,
   getSubscriptionFundingState,
 } from "@/lib/aquifers";
+import { useToast } from "@/components/ui/Toast";
 
 export function AquiferDetailPage({ aquiferId }: { aquiferId: string }) {
+  const { toast } = useToast();
   const { data: aquifer } = useQuery({
     queryKey: ["aquifer-detail", aquiferId],
     queryFn: () => getAquiferDetails(aquiferId),
@@ -61,6 +63,18 @@ export function AquiferDetailPage({ aquiferId }: { aquiferId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-payout-schedule", aquiferId] });
       queryClient.invalidateQueries({ queryKey: ["aquifer-events", aquiferId] });
+      toast({
+        type: "success",
+        title: "Schedule Saved",
+        message: "Payout schedule updated.",
+      });
+    },
+    onError: (e: Error) => {
+      toast({
+        type: "error",
+        title: "Save Failed",
+        message: e.message,
+      });
     },
   });
 
@@ -71,6 +85,18 @@ export function AquiferDetailPage({ aquiferId }: { aquiferId: string }) {
       queryClient.invalidateQueries({ queryKey: ["subscription-payout-executions", aquiferId] });
       queryClient.invalidateQueries({ queryKey: ["aquifer-events", aquiferId] });
       queryClient.invalidateQueries({ queryKey: ["user-transactions"] });
+      toast({
+        type: "success",
+        title: "Payouts Executed",
+        message: "Due subscription payouts have been processed.",
+      });
+    },
+    onError: (e: Error) => {
+      toast({
+        type: "error",
+        title: "Execution Failed",
+        message: e.message,
+      });
     },
   });
 
@@ -91,15 +117,22 @@ export function AquiferDetailPage({ aquiferId }: { aquiferId: string }) {
     try {
       const { createSharedAquiferInvite } = await import("@/actions/shared-aquifers");
       const res = await createSharedAquiferInvite(aquiferId);
-      // In a real app, we'd copy this to clipboard
-      alert("Invite link copied to clipboard! (ID: " + res.inviteId + ")");
+      toast({
+        type: "success",
+        title: "Invite Created",
+        message: "Invite ID: " + res.inviteId + " — share this with your contributor.",
+      });
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "Failed to create invite");
+      toast({
+        type: "error",
+        title: "Invite Failed",
+        message: e instanceof Error ? e.message : "Failed to create invite",
+      });
     }
   };
   
 
-  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase());
+  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase() && v.chain.id === 8453);
   const currentApy = currentVaultStats?.yield?.['7d'] ? parseFloat(currentVaultStats.yield['7d']) * 100 : 0;
 
   if (!aquifer) {

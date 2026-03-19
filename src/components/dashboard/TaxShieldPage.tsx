@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Shield, Settings, History } from "lucide-react";
 import { getTaxShieldConfig, getRecentTaxEvents, updateTaxShieldProfile } from "@/actions/tax-shield";
+import { useToast } from "@/components/ui/Toast";
 
 export function TaxShieldPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: config } = useQuery({
     queryKey: ["tax-shield", "config"],
@@ -42,6 +44,18 @@ export function TaxShieldPage() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tax-shield"] });
+      toast({
+        type: "success",
+        title: "Tax Shield Updated",
+        message: "Your routing configuration has been saved.",
+      });
+    },
+    onError: (e: Error) => {
+      toast({
+        type: "error",
+        title: "Save Failed",
+        message: e.message,
+      });
     },
   });
 

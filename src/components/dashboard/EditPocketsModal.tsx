@@ -5,6 +5,7 @@ import { useState } from "react";
 import { X, Plus, Trash2, Save, Loader2 } from "lucide-react";
 import { updateAquifers } from "@/actions/user-config";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/Toast";
 
 interface AquiferData {
   id: string;
@@ -52,6 +53,7 @@ export function EditPocketsModal({
   const [aquifers, setAquifers] = useState<AquiferData[]>(initialPockets.length > 0 ? initialPockets : []);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const totalPercentage = aquifers.reduce((acc, aquifer) => acc + aquifer.allocationPercent, 0);
 
@@ -59,6 +61,11 @@ export function EditPocketsModal({
     mutationFn: updateAquifers,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-config"] });
+      toast({
+        type: "success",
+        title: "Aquifers Saved",
+        message: "Your allocation configuration has been updated.",
+      });
       onClose();
     },
     onError: (e: Error) => {

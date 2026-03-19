@@ -9,10 +9,8 @@ import {
   TrendingUp,
   Plus,
   Loader2,
-  CheckCircle2,
-  AlertCircle
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatUnits, erc20Abi } from "viem";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -26,20 +24,21 @@ import { TransactionHistory } from "./TransactionHistory";
 import { getAquiferHealth, getAquiferProgress, getAquiferSubtitle, getAquiferTypeLabel } from "@/lib/aquifers";
 import { getUpcomingSubscriptionPayouts } from "@/actions/subscription-payouts";
 import { getTaxShieldConfig } from "@/actions/tax-shield";
+import { useToast } from "@/components/ui/Toast";
 
 const BASE_USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 
 export function DashboardOverview() {
   const queryClient = useQueryClient();
+  const { toast, dismiss, updateToast } = useToast();
 
   const [depositAmount, setManualAmount] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("Your Oasis has been nourished.");
   const [routingStep, setRoutingStep] = useState<"idle" | "redeeming" | "transferring">("idle");
   const pendingDonationRoutesRef = useRef<Array<{ id: string; name: string; amountUSDC: number; destinationAddress: string }>>([]);
   const currentDonationRouteRef = useRef<{ id: string; name: string; amountUSDC: number; destinationAddress: string } | null>(null);
   const completedDonationCountRef = useRef(0);
   const pendingDepositAmountRef = useRef<number>(0);
+  const onchainToastIdRef = useRef<string | null>(null);
 
   // Fetch DB Data
   const { data: userConfig } = useQuery({
@@ -80,12 +79,37 @@ export function DashboardOverview() {
         queryClient.invalidateQueries({ queryKey: ["user-wealth"] });
       }
       setManualAmount("");
-      setSuccessMessage("Deposit Successful!");
-      setShowSuccess(true);
+      if (onchainToastIdRef.current) {
+        updateToast(onchainToastIdRef.current, {
+          type: "success",
+          title: "Deposit Confirmed",
+          message: "Your USDC is now earning yield in the YO vault on Base.",
+        });
+        onchainToastIdRef.current = null;
+      } else {
+        toast({
+          type: "success",
+          title: "Deposit Confirmed",
+          message: "Your USDC is now earning yield in the YO vault on Base.",
+        });
+      }
       refetchPosition();
-      setTimeout(() => setShowSuccess(false), 5000);
     }
   });
+
+  useEffect(() => {
+    if (onchainToastIdRef.current && isDepositing) {
+      if ((depositStep as any) === 'approving') {
+        updateToast(onchainToastIdRef.current, {
+          message: "Approving USDC spend...",
+        });
+      } else if ((depositStep as any) !== 'approving') {
+        updateToast(onchainToastIdRef.current, {
+          message: "Depositing to vault...",
+        });
+      }
+    }
+  }, [depositStep, isDepositing, updateToast]);
 
   // Wagmi transfer setup for donations
   const { writeContract, data: transferHash, error: transferError, reset: resetTransfer } = useWriteContract();
@@ -105,25 +129,55 @@ export function DashboardOverview() {
 
   useEffect(() => {
     if (isRedeemSuccess && routingStep === 'redeeming') {
+      if (instant === undefined) return;
+
       refetchPosition();
       
       if (!instant) {
         setRoutingStep('idle');
-        setSuccessMessage("Yield redeemed. The withdrawal is pending and will be available to route in up to 24 hours.");
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 8000);
+        if (onchainToastIdRef.current) {
+          updateToast(onchainToastIdRef.current, {
+            type: "success",
+            title: "Yield Redeemed",
+            message: "The withdrawal is pending and will be available to route in up to 24 hours.",
+          });
+          onchainToastIdRef.current = null;
+        } else {
+          toast({
+            type: "success",
+            title: "Yield Redeemed",
+            message: "The withdrawal is pending and will be available to route in up to 24 hours.",
+          });
+        }
         return;
       }
 
       setRoutingStep('transferring');
+      if (onchainToastIdRef.current) {
+        updateToast(onchainToastIdRef.current, {
+          message: "Sending USDC to destination...",
+        });
+      }
+
       const nextRoute = pendingDonationRoutesRef.current.shift() ?? null;
       currentDonationRouteRef.current = nextRoute;
 
       if (!nextRoute) {
         setRoutingStep('idle');
-        setSuccessMessage("No active donation routes were eligible to execute.");
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 5000);
+        if (onchainToastIdRef.current) {
+          updateToast(onchainToastIdRef.current, {
+            type: "info",
+            title: "No Routes",
+            message: "No active donation routes were eligible to execute.",
+          });
+          onchainToastIdRef.current = null;
+        } else {
+          toast({
+            type: "info",
+            title: "No Routes",
+            message: "No active donation routes were eligible to execute.",
+          });
+        }
         return;
       }
 
@@ -166,13 +220,24 @@ export function DashboardOverview() {
       }
 
       setRoutingStep('idle');
-      setSuccessMessage(
-        completedDonationCountRef.current === 1
-          ? "Executed 1 donation route."
-          : `Executed ${completedDonationCountRef.current} donation routes.`,
-      );
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 5000);
+      const msg = completedDonationCountRef.current === 1
+        ? "Executed 1 donation route."
+        : `Executed ${completedDonationCountRef.current} donation routes.`;
+      
+      if (onchainToastIdRef.current) {
+        updateToast(onchainToastIdRef.current, {
+          type: "success",
+          title: "Routes Executed",
+          message: msg,
+        });
+        onchainToastIdRef.current = null;
+      } else {
+        toast({
+          type: "success",
+          title: "Routes Executed",
+          message: msg,
+        });
+      }
       completedDonationCountRef.current = 0;
 
       queryClient.invalidateQueries({ queryKey: ['user-transactions'] });
@@ -187,6 +252,21 @@ export function DashboardOverview() {
       pendingDonationRoutesRef.current = [];
       completedDonationCountRef.current = 0;
       setRoutingStep('idle');
+
+      if (onchainToastIdRef.current) {
+        updateToast(onchainToastIdRef.current, {
+          type: "error",
+          title: "Transfer Failed",
+          message: transferError.message,
+        });
+        onchainToastIdRef.current = null;
+      } else {
+        toast({
+          type: "error",
+          title: "Transfer Failed",
+          message: transferError.message,
+        });
+      }
 
       void recordDonationRouterExecution({
         routerId: failedRoute.id,
@@ -226,17 +306,18 @@ export function DashboardOverview() {
       queryClient.invalidateQueries({ queryKey: ["user-config"] });
       queryClient.invalidateQueries({ queryKey: ["user-transactions"] });
       queryClient.invalidateQueries({ queryKey: ["user-wealth"] });
-      setSuccessMessage(
-        result.allocatedTotal > 0
-          ? `Allocated $${result.allocatedTotal.toFixed(2)} of yield into your aquifers.`
-          : "No free yield available to allocate yet."
-      );
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 5000);
+      const msg = result.allocatedTotal > 0
+        ? `Allocated $${result.allocatedTotal.toFixed(2)} of yield into your aquifers.`
+        : "No free yield available to allocate yet.";
+      toast({
+        type: "success",
+        title: "Yield Allocated",
+        message: msg,
+      });
     },
   });
 
-  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase());
+  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase() && v.chain.id === 8453);
   const currentApy = currentVaultStats?.yield?.['7d'] ? parseFloat(currentVaultStats.yield['7d']) * 100 : 0;
   const displayBalance = totalAssets;
   const displayYield = totalAssets * (currentApy / 100) / 12;
@@ -268,12 +349,33 @@ export function DashboardOverview() {
       const amountNumber = Number(sanitizedAmount);
       const amountRaw = parseTokenAmount(sanitizedAmount, 6);
       pendingDepositAmountRef.current = amountNumber;
+      
+      onchainToastIdRef.current = toast({
+        type: "onchain",
+        title: "Initiating Deposit",
+        message: "Waiting for wallet confirmation...",
+      });
+
       await deposit({
         token: VAULTS.yoUSD.underlying.address[8453]!, 
         amount: amountRaw
       });
     } catch (e) {
       pendingDepositAmountRef.current = 0;
+      if (onchainToastIdRef.current) {
+        updateToast(onchainToastIdRef.current, {
+          type: "error",
+          title: "Deposit Failed",
+          message: String(e),
+        });
+        onchainToastIdRef.current = null;
+      } else {
+        toast({
+          type: "error",
+          title: "Deposit Failed",
+          message: String(e),
+        });
+      }
       console.error("Deposit failed", e);
     }
   };
@@ -286,7 +388,7 @@ export function DashboardOverview() {
 
     if (!position || position.shares === 0n) return;
     if (!client) {
-      alert("YO Client not initialized yet.");
+      toast({ type: "error", title: "Not Ready", message: "YO Client not initialized yet." });
       return;
     }
 
@@ -294,12 +396,12 @@ export function DashboardOverview() {
       const plan = await getDonationRouterExecutionPlan(availableYield);
 
       if (plan.executableRouters.length === 0) {
-        alert("No active donation routes are ready to execute yet.");
+        toast({ type: "info", title: "No Routes", message: "No active donation routes are ready to execute yet." });
         return;
       }
 
       if (!plan.hasSufficientYield) {
-        alert(`You only have $${availableYield.toFixed(2)} of unallocated yield available to route right now.`);
+        toast({ type: "info", title: "Insufficient Yield", message: `You only have $${availableYield.toFixed(2)} of unallocated yield available to route right now.` });
         return;
       }
 
@@ -307,7 +409,7 @@ export function DashboardOverview() {
       const sharesToRedeem = await client.quoteConvertToShares(vaultAddress, rawAmountToWithdraw);
       
       if (sharesToRedeem > position.shares) {
-        alert("Not enough yield/balance to execute these routes.");
+        toast({ type: "error", title: "Insufficient Balance", message: "Not enough yield/balance to execute these routes." });
         return;
       }
 
@@ -315,53 +417,35 @@ export function DashboardOverview() {
       currentDonationRouteRef.current = null;
       completedDonationCountRef.current = 0;
       setRoutingStep('redeeming');
+      
+      onchainToastIdRef.current = toast({
+        type: "onchain",
+        title: "Executing Routes",
+        message: "Redeeming yield shares...",
+      });
+
       await redeem(sharesToRedeem);
     } catch (e) {
       pendingDonationRoutesRef.current = [];
       currentDonationRouteRef.current = null;
       completedDonationCountRef.current = 0;
       setRoutingStep('idle');
+      if (onchainToastIdRef.current) {
+        updateToast(onchainToastIdRef.current, {
+          type: "error",
+          title: "Execution Failed",
+          message: String(e),
+        });
+        onchainToastIdRef.current = null;
+      } else {
+        toast({ type: "error", title: "Execution Failed", message: String(e) });
+      }
       console.error("Redeem failed", e);
     }
   };
 
-  const errorState = depositError || redeemError || transferError;
-
   return (
     <div className="relative">
-      <AnimatePresence>
-        {showSuccess && (
-          <motion.div 
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-green-50 border border-green-200 p-4 rounded-xl shadow-xl flex items-center gap-3 max-w-[calc(100vw-2rem)]"
-          >
-            <CheckCircle2 className="text-green-500 w-6 h-6" />
-            <div>
-              <p className="font-bold text-green-800">Success</p>
-              <p className="text-sm text-green-600">{successMessage}</p>
-            </div>
-          </motion.div>
-        )}
-        
-        {errorState && (
-          <motion.div 
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-red-50 border border-red-200 p-4 rounded-xl shadow-xl flex items-center gap-3 max-w-[calc(100vw-2rem)]"
-          >
-            <AlertCircle className="text-red-500 w-6 h-6" />
-            <div>
-              <p className="font-bold text-red-800">Action Failed</p>
-              <p className="text-sm text-red-600 max-w-xs truncate">{errorState.message}</p>
-            </div>
-            <button onClick={() => { resetDeposit(); resetRedeem(); resetTransfer(); }} className="text-xs font-bold uppercase tracking-widest ml-4 bg-red-100 px-3 py-1.5 rounded-xl text-red-700">Dismiss</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
         {/* Main Column */}
@@ -560,7 +644,7 @@ export function DashboardOverview() {
                 ) : isDepositing ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin text-terracotta" />
-                    {depositStep === 'approving' ? 'Approving USDC...' : 'Depositing...'}
+                    {(depositStep as any) === 'approving' ? 'Approving USDC...' : 'Depositing...'}
                   </>
                 ) : (
                   <>

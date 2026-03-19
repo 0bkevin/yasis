@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Coins, Loader2, Plus, RefreshCw, Link as LinkIcon, Coffee, TrendingUp } from "lucide-react";
 import { getLinkedAccounts, connectMockAccount, triggerMockSync, getRecentSyncRuns } from "@/actions/spare-change";
@@ -23,17 +23,26 @@ export default function SpareChangePage() {
   const { vaults } = useVaults();
   const { chainId } = useAccount();
   const { switchChain } = useSwitchChain();
+
+  const pendingSweepIdsRef = React.useRef<string[]>([]);
   
-  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase());
+  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase() && v.chain.id === 8453);
   const currentApy = currentVaultStats?.yield?.['7d'] ? (parseFloat(currentVaultStats.yield['7d']) * 100).toFixed(2) : '0.00';
   
   const { deposit } = useDeposit({
     vault: vaultAddress,
-    onConfirmed: () => {
+    onConfirmed: async () => {
+      if (pendingSweepIdsRef.current.length > 0) {
+        await sweepMutation.mutateAsync(pendingSweepIdsRef.current);
+        pendingSweepIdsRef.current = [];
+      }
       setIsSweeping(false);
       refetch();
     },
-    onError: () => setIsSweeping(false)
+    onError: () => {
+      pendingSweepIdsRef.current = [];
+      setIsSweeping(false);
+    },
   });
 
   const handleSweepAll = async () => {
@@ -45,7 +54,7 @@ export default function SpareChangePage() {
     try {
       await deposit({
         token: VAULTS.yoUSD.underlying.address[8453]!,
-        amount: parseTokenAmount("5.40", 6) // Mock sum of pending sweeps
+        amount: parseTokenAmount("5.40", 6)
       });
     } catch (e) {
       console.error(e);
@@ -119,14 +128,15 @@ export default function SpareChangePage() {
     }
     if (pendingRealTransactions.length === 0) return;
     setIsSweeping(true);
+    pendingSweepIdsRef.current = pendingRealTransactions.map(t => t.id);
     try {
       await deposit({
         token: VAULTS.yoUSD.underlying.address[8453]!,
         amount: parseTokenAmount(realTotalRoundUp.toFixed(6), 6)
       });
-      await sweepMutation.mutateAsync(pendingRealTransactions.map(t => t.id));
     } catch (e) {
       console.error(e);
+      pendingSweepIdsRef.current = [];
       setIsSweeping(false);
     }
   };

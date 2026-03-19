@@ -122,7 +122,10 @@ export async function getSubscriptionPayoutExecutions(aquiferId?: string, limit 
     ? await db
         .select()
         .from(subscriptionPayoutExecutions)
-        .where(eq(subscriptionPayoutExecutions.aquiferId, aquiferId))
+        .where(and(
+          eq(subscriptionPayoutExecutions.aquiferId, aquiferId),
+          eq(subscriptionPayoutExecutions.walletAddress, address),
+        ))
         .limit(safeLimit)
     : await db
         .select()
@@ -130,9 +133,7 @@ export async function getSubscriptionPayoutExecutions(aquiferId?: string, limit 
         .where(eq(subscriptionPayoutExecutions.walletAddress, address))
         .limit(safeLimit);
 
-  return rows
-    .filter((row) => row.walletAddress === address)
-    .map((row) => ({
+  return rows.map((row) => ({
       ...row,
       scheduledFor: row.scheduledFor ? row.scheduledFor.toISOString() : null,
       executedAt: row.executedAt ? row.executedAt.toISOString() : null,

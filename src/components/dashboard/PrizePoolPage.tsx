@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trophy, Clock, Users, ArrowRightLeft, History } from "lucide-react";
 import { getCurrentPrizePool, getPrizeHistory, enterPrizePool } from "@/actions/prize-pool";
+import { useToast } from "@/components/ui/Toast";
 
 export function PrizePoolPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [depositAmount, setDepositAmount] = useState("");
 
   const { data: pool } = useQuery({
@@ -25,10 +27,18 @@ export function PrizePoolPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prize-pool"] });
       setDepositAmount("");
-      alert("Successfully entered the Prize Pool!");
+      toast({
+        type: "success",
+        title: "Entered Prize Pool!",
+        message: "Your principal is deposited. Good luck in the draw!",
+      });
     },
     onError: (e: Error) => {
-      alert(e.message);
+      toast({
+        type: "error",
+        title: "Entry Failed",
+        message: e.message,
+      });
     }
   });
 

@@ -43,7 +43,7 @@ export function AquiferManagementPage() {
     return Number(formatUnits(position.assets, 6));
   }, [position]);
 
-  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase());
+  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase() && v.chain.id === 8453);
   const currentApy = currentVaultStats?.yield?.['7d'] ? parseFloat(currentVaultStats.yield['7d']) * 100 : 0;
 
   const aquifers = userConfig?.aquifers ?? [];

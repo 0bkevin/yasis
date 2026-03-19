@@ -7,6 +7,7 @@ import { addYieldRouter, updateYieldRouter } from "@/actions/user-config";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveNgos } from "@/actions/ngos";
+import { useToast } from "@/components/ui/Toast";
 
 type RouterDraft = {
   id: string;
@@ -34,6 +35,7 @@ export function CreateRouterModal({
   const [error, setError] = useState("");
 
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { data: ngos = [] } = useQuery({
     queryKey: ["ngos", "active"],
     queryFn: () => getActiveNgos(),
@@ -43,6 +45,11 @@ export function CreateRouterModal({
     mutationFn: initialRouter ? updateYieldRouter : addYieldRouter,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-config"] });
+      toast({
+        type: "success",
+        title: initialRouter ? "Router Updated" : "Router Created",
+        message: "Your yield router is now active.",
+      });
       onClose();
     },
     onError: (e: Error) => {

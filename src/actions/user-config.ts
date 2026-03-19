@@ -120,53 +120,57 @@ export async function updateAquifers(newAquifers: AquiferInput[]) {
     existingAquifers.reduce((acc, aquifer) => acc + Number(aquifer.balanceUSDC ?? 0), 0).toFixed(2),
   );
 
-  await db.delete(aquifers).where(eq(aquifers.walletAddress, address));
+  await db.transaction(async (tx) => {
+    await tx.delete(aquifers).where(eq(aquifers.walletAddress, address));
+
+    if (newAquifers.length > 0) {
+      const balanceSeed = redistributedBalance > 0
+        ? newAquifers.map((aquifer, index) => {
+            const proportional = Number((redistributedBalance * (aquifer.allocationPercent / 100)).toFixed(2));
+            if (index === newAquifers.length - 1) {
+              const priorTotal = newAquifers
+                .slice(0, -1)
+                .reduce((acc, item) => acc + Number((redistributedBalance * (item.allocationPercent / 100)).toFixed(2)), 0);
+              return Number((redistributedBalance - priorTotal).toFixed(2));
+            }
+            return proportional;
+          })
+        : [];
+
+      await tx.insert(aquifers).values(
+        newAquifers.map((aquifer, index) => ({
+          id: aquifer.id,
+          walletAddress: address,
+          name: aquifer.name.trim(),
+          type: aquifer.type,
+          status: aquifer.status,
+          allocationPercent: normalizePercent(aquifer.allocationPercent),
+          balanceUSDC: existingBalances.get(aquifer.id) ?? balanceSeed[index] ?? 0,
+          targetAmountUSDC: normalizeUSDC(aquifer.targetAmountUSDC),
+          targetMonthlyOutflowUSDC: normalizeUSDC(aquifer.targetMonthlyOutflowUSDC),
+          targetDate: normalizeOptionalDate(aquifer.targetDate),
+          unlockAt: normalizeOptionalDate(aquifer.unlockAt),
+          requiredPrincipalSnapshotUSDC:
+            aquifer.type === "subscription"
+              ? normalizeUSDC(
+                  aquifer.requiredPrincipalSnapshotUSDC ?? estimateSubscriptionPrincipal(
+                    aquifer.targetMonthlyOutflowUSDC ?? 0,
+                    (aquifer.estimatedApyBps ?? 0) / 100,
+                  ),
+                )
+              : null,
+          estimatedApyBps: normalizeApyBps(aquifer.estimatedApyBps),
+          overflowMode: aquifer.overflowMode,
+          color: aquifer.color ?? null,
+          notes: aquifer.notes?.trim() || null,
+          createdAt: previousById.get(aquifer.id)?.createdAt ?? new Date(),
+          updatedAt: new Date(),
+        })),
+      );
+    }
+  });
 
   if (newAquifers.length > 0) {
-    const balanceSeed = redistributedBalance > 0
-      ? newAquifers.map((aquifer, index) => {
-          const proportional = Number((redistributedBalance * (aquifer.allocationPercent / 100)).toFixed(2));
-          if (index === newAquifers.length - 1) {
-            const priorTotal = newAquifers
-              .slice(0, -1)
-              .reduce((acc, item) => acc + Number((redistributedBalance * (item.allocationPercent / 100)).toFixed(2)), 0);
-            return Number((redistributedBalance - priorTotal).toFixed(2));
-          }
-          return proportional;
-        })
-      : [];
-
-    await db.insert(aquifers).values(
-      newAquifers.map((aquifer, index) => ({
-        id: aquifer.id,
-        walletAddress: address,
-        name: aquifer.name.trim(),
-        type: aquifer.type,
-        status: aquifer.status,
-        allocationPercent: normalizePercent(aquifer.allocationPercent),
-        balanceUSDC: existingBalances.get(aquifer.id) ?? balanceSeed[index] ?? 0,
-        targetAmountUSDC: normalizeUSDC(aquifer.targetAmountUSDC),
-        targetMonthlyOutflowUSDC: normalizeUSDC(aquifer.targetMonthlyOutflowUSDC),
-        targetDate: normalizeOptionalDate(aquifer.targetDate),
-        unlockAt: normalizeOptionalDate(aquifer.unlockAt),
-        requiredPrincipalSnapshotUSDC:
-          aquifer.type === "subscription"
-            ? normalizeUSDC(
-                aquifer.requiredPrincipalSnapshotUSDC ?? estimateSubscriptionPrincipal(
-                  aquifer.targetMonthlyOutflowUSDC ?? 0,
-                  (aquifer.estimatedApyBps ?? 0) / 100,
-                ),
-              )
-            : null,
-        estimatedApyBps: normalizeApyBps(aquifer.estimatedApyBps),
-        overflowMode: aquifer.overflowMode,
-        color: aquifer.color ?? null,
-        notes: aquifer.notes?.trim() || null,
-        createdAt: previousById.get(aquifer.id)?.createdAt ?? new Date(),
-        updatedAt: new Date(),
-      })),
-    );
-
     for (const aquifer of newAquifers) {
       const previous = previousById.get(aquifer.id);
       if (!previous) {

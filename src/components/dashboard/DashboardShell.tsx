@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import {  LayoutDashboard, WalletCards, HeartHandshake, History, Coffee, Shield, Trophy , Info } from "lucide-react";
+import { ToastContainer } from "@/components/ui/Toast";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const { isConnected } = useAccount();
@@ -102,6 +103,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       >
         {children}
       </motion.div>
+      <ToastContainer />
     </div>
   );
 }

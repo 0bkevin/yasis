@@ -10,7 +10,7 @@ export default function ExplorePage() {
   const { tvl, isLoading: tvlLoading } = useTotalTvl();
 
   const vaultAddress = VAULTS.yoUSD.address;
-  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase());
+  const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase() && v.chain.id === 8453);
   const currentApy = currentVaultStats?.yield?.['7d'] ? (parseFloat(currentVaultStats.yield['7d']) * 100).toFixed(2) : '8.50';
 
   return (

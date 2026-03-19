@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllNgos, upsertNgo } from "@/actions/ngos";
 import { HeartHandshake, Plus } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 type NgoDraft = {
   id?: string;
@@ -33,6 +34,7 @@ const emptyDraft: NgoDraft = {
 
 export function NgoManagementPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { data: ngos = [] } = useQuery({
     queryKey: ["ngos", "all"],
     queryFn: () => getAllNgos(),
@@ -47,7 +49,19 @@ export function NgoManagementPage() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ngos"] });
+      toast({
+        type: "success",
+        title: draft.id ? "NGO Updated" : "NGO Created",
+        message: "Changes saved to the NGO directory.",
+      });
       setDraft(emptyDraft);
+    },
+    onError: (e: Error) => {
+      toast({
+        type: "error",
+        title: "Save Failed",
+        message: e.message,
+      });
     },
   });
 

@@ -4,6 +4,7 @@ import { WagmiProvider, cookieToInitialState, type Config } from 'wagmi';
 import { base } from '@reown/appkit/networks';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { YieldProvider } from '@yo-protocol/react';
+import { ToastProvider } from '@/components/ui/Toast';
 import { ReactNode, useState } from 'react';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
@@ -51,7 +52,9 @@ export function Providers({ children, cookies }: { children: ReactNode; cookies:
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
         <YieldProvider partnerId={101} defaultSlippageBps={50}>
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </YieldProvider>
       </QueryClientProvider>
     </WagmiProvider>
