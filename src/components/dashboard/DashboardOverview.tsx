@@ -24,13 +24,13 @@ import { TransactionHistory } from "./TransactionHistory";
 import { getAquiferHealth, getAquiferProgress, getAquiferSubtitle, getAquiferTypeLabel } from "@/lib/aquifers";
 import { getUpcomingSubscriptionPayouts } from "@/actions/subscription-payouts";
 import { getTaxShieldConfig } from "@/actions/tax-shield";
-import { useToast } from "@/components/ui/Toast";
+import { useToastActions } from "@/components/ui/Toast";
 
 const BASE_USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 
 export function DashboardOverview() {
   const queryClient = useQueryClient();
-  const { toast, dismiss, updateToast } = useToast();
+  const { toast, updateToast } = useToastActions();
 
   const [depositAmount, setManualAmount] = useState("");
   const [routingStep, setRoutingStep] = useState<"idle" | "redeeming" | "transferring">("idle");

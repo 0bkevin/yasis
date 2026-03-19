@@ -1,0 +1,70 @@
+--- src/components/dashboard/PrizePoolPage.tsx
++++ src/components/dashboard/PrizePoolPage.tsx
+@@ -107,26 +107,33 @@
+             </div>
+ 
+             <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8">
+-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><ArrowRightLeft className="w-4 h-4 text-terracotta" /> Enter the Pool</h3>
+-              <div className="flex flex-col sm:flex-row gap-4">
+-                <div className="relative flex-1">
+-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-seashell/50 font-bold">$</span>
+-                  <input
+-                    type="number"
+-                    value={depositAmount}
+-                    onChange={(e) => setDepositAmount(e.target.value)}
+-                    placeholder="0.00"
+-                    className="w-full bg-white/10 border border-white/10 rounded-xl pl-8 pr-4 py-4 text-seashell placeholder:text-seashell/30 focus:outline-none focus:ring-2 focus:ring-terracotta/50 transition-all font-display text-xl font-bold"
+-                  />
++              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
++                <ArrowRightLeft className="w-4 h-4 text-terracotta" /> Enter the Pool
++              </h3>
++              {pool?.isUserEntered ? (
++                <div className="bg-terracotta/10 border border-terracotta/20 rounded-xl p-4 text-terracotta font-medium flex items-center gap-2">
++                  <Sparkles className="w-5 h-5" /> You are entered in this week's draw! Good luck!
+                 </div>
+-                <button
+-                  onClick={handleDeposit}
+-                  disabled={isDepositing || enterMutation.isPending || !depositAmount || Number(depositAmount) <= 0}
+-                  className="px-8 py-4 bg-terracotta hover:bg-[#d1614a] text-white font-bold rounded-xl transition-all shadow-lg shadow-terracotta/20 disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
+-                >
+-                  {isDepositing || enterMutation.isPending ? (
+-                    <><Loader2 className="w-4 h-4 animate-spin" /> {(depositStep as any) === 'approving' ? 'Approving...' : 'Entering...'}</>
+-                  ) : chainId !== 8453 ? (
+-                    "Switch to Base"
+-                  ) : (
+-                    "Deposit to Enter"
+-                  )}
+-                </button>
+-              </div>
+-              <p className="text-xs text-seashell/50 mt-3 font-medium">Your deposited principal is never at risk. Deployed to YO Vault on Base.</p>
++              ) : (
++                <>
++                  <div className="flex flex-col sm:flex-row gap-4">
++                    <div className="relative flex-1">
++                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-seashell/50 font-bold">$</span>
++                      <input
++                        type="number"
++                        value={depositAmount}
++                        onChange={(e) => setDepositAmount(e.target.value)}
++                        placeholder="0.00"
++                        className="w-full bg-white/10 border border-white/10 rounded-xl pl-8 pr-4 py-4 text-seashell placeholder:text-seashell/30 focus:outline-none focus:ring-2 focus:ring-terracotta/50 transition-all font-display text-xl font-bold"
++                      />
++                    </div>
++                    <button
++                      onClick={handleDeposit}
++                      disabled={isDepositing || enterMutation.isPending || !depositAmount || Number(depositAmount) <= 0}
++                      className="px-8 py-4 bg-terracotta hover:bg-[#d1614a] text-white font-bold rounded-xl transition-all shadow-lg shadow-terracotta/20 disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
++                    >
++                      {isDepositing || enterMutation.isPending ? (
++                        <><Loader2 className="w-4 h-4 animate-spin" /> {(depositStep as any) === 'approving' ? 'Approving...' : 'Entering...'}</>
++                      ) : chainId !== 8453 ? (
++                        "Switch to Base"
++                      ) : (
++                        "Deposit to Enter"
++                      )}
++                    </button>
++                  </div>
++                  <p className="text-xs text-seashell/50 mt-3 font-medium">Your deposited principal is never at risk. Deployed to YO Vault on Base.</p>
++                </>
++              )}
+             </div>

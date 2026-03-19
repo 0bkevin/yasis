@@ -1,0 +1,21 @@
+--- src/actions/prize-pool.ts
++++ src/actions/prize-pool.ts
+@@ -29,6 +29,12 @@
+   // Simulate yield for hackathon demo purposes (14% APY for 1 week on total deposited)
+   // Yield = Principal * 0.14 * (7/365)
+   const simulatedYield = totalDeposited * 0.14 * (7 / 365);
++
++  let isUserEntered = false;
++  const session = await getSession();
++  if (session.address) {
++    isUserEntered = entries.some(e => e.walletAddress.toLowerCase() === session.address?.toLowerCase());
++  }
+ 
+   return {
+     ...pool,
+     currentYieldPotUSDC: Math.max(pool.currentYieldPotUSDC, simulatedYield),
+     participantsCount,
+     totalDeposited,
++    isUserEntered,
+   };
+ }

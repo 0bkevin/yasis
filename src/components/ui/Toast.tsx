@@ -14,14 +14,14 @@ export interface ToastMessage {
   duration?: number;
 }
 
-interface ToastContextType {
+interface ToastActions {
   toast: (options: Omit<ToastMessage, "id">) => string;
   dismiss: (id: string) => void;
   updateToast: (id: string, options: Partial<Omit<ToastMessage, "id">>) => void;
-  toasts: ToastMessage[];
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
+const ToastStateContext = createContext<ToastMessage[] | undefined>(undefined);
+const ToastActionsContext = createContext<ToastActions | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -54,8 +54,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 
   const updateToast = useCallback((id: string, options: Partial<Omit<ToastMessage, "id">>) => {
-    setToasts((prev) =>
-      prev.map((t) => {
+    setToasts((prev) => {
+      const existing = prev.find(t => t.id === id);
+      if (!existing) return prev;
+
+      // Check if anything actually changed to prevent loops
+      const hasChanges = Object.entries(options).some(([key, value]) => {
+        return (existing as any)[key] !== value;
+      });
+
+      if (!hasChanges) return prev;
+
+      return prev.map((t) => {
         if (t.id === id) {
           const updated = { ...t, ...options };
           if (options.type === "success" && t.type === "onchain") {
@@ -64,27 +74,53 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           return updated;
         }
         return t;
-      })
-    );
+      });
+    });
   }, [dismiss]);
 
   return (
-    <ToastContext.Provider value={{ toast, dismiss, updateToast, toasts }}>
-      {children}
-    </ToastContext.Provider>
+    <ToastStateContext.Provider value={toasts}>
+      <ToastActionsContext.Provider value={{ toast, dismiss, updateToast }}>
+        {children}
+      </ToastActionsContext.Provider>
+    </ToastStateContext.Provider>
   );
 }
 
 export function useToast() {
-  const context = useContext(ToastContext);
-  if (!context) {
+  const state = useContext(ToastStateContext);
+  const actions = useContext(ToastActionsContext);
+  if (state === undefined || actions === undefined) {
     throw new Error("useToast must be used within a ToastProvider");
   }
-  return context;
+  return { ...actions, toasts: state };
+}
+
+export function useToastActions() {
+  const actions = useContext(ToastActionsContext);
+  if (actions === undefined) {
+    throw new Error("useToastActions must be used within a ToastProvider");
+  }
+  return actions;
+}
+
+export function useToasts() {
+  const state = useContext(ToastStateContext);
+  if (state === undefined) {
+    throw new Error("useToasts must be used within a ToastProvider");
+  }
+  return state;
 }
 
 export function ToastContainer() {
-  const { toasts, dismiss } = useToast();
+  const state = useContext(ToastStateContext);
+  const actions = useContext(ToastActionsContext);
+  
+  if (state === undefined || actions === undefined) return null;
+  
+  const { dismiss } = actions;
+  const toasts = state;
+
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[70] flex flex-col items-center gap-3 w-full max-w-md px-4 pointer-events-none">
       <AnimatePresence mode="popLayout">
