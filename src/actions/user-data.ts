@@ -4,6 +4,9 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { spareBankTransactions, userTransactions, users } from "@/db/schema";
 import { getSession } from "@/lib/session";
+import { Mutex } from "async-mutex";
+
+const sweepMutex = new Mutex();
 
 type TransactionKind = "deposit" | "sweep" | "route" | "withdrawal" | "manual" | "allocation";
 type TransactionDirection = "in" | "out";
@@ -191,39 +194,41 @@ export async function markSpareTransactionsSwept(transactionIds: string[]) {
     return { success: true, sweptCount: 0 };
   }
 
-  const pendingRows = await db
-    .select({ id: spareBankTransactions.id, roundUpAmount: spareBankTransactions.roundUpAmount })
-    .from(spareBankTransactions)
-    .where(
-      and(
-        eq(spareBankTransactions.walletAddress, address),
-        inArray(spareBankTransactions.id, transactionIds),
-        eq(spareBankTransactions.status, "pending"),
-      ),
-    );
+  return await sweepMutex.runExclusive(async () => {
+    const pendingRows = await db
+      .select({ id: spareBankTransactions.id, roundUpAmount: spareBankTransactions.roundUpAmount })
+      .from(spareBankTransactions)
+      .where(
+        and(
+          eq(spareBankTransactions.walletAddress, address),
+          inArray(spareBankTransactions.id, transactionIds),
+          eq(spareBankTransactions.status, "pending"),
+        ),
+      );
 
-  if (pendingRows.length === 0) {
-    return { success: true, sweptCount: 0 };
-  }
+    if (pendingRows.length === 0) {
+      return { success: true, sweptCount: 0 };
+    }
 
-  await db
-    .update(spareBankTransactions)
-    .set({ status: "swept", sweptAt: new Date() })
-    .where(inArray(spareBankTransactions.id, pendingRows.map((row) => row.id)));
+    await db
+      .update(spareBankTransactions)
+      .set({ status: "swept", sweptAt: new Date() })
+      .where(inArray(spareBankTransactions.id, pendingRows.map((row) => row.id)));
 
-  const totalAmount = pendingRows.reduce((acc, row) => acc + row.roundUpAmount, 0);
-  await db.insert(userTransactions).values({
-    id: crypto.randomUUID(),
-    walletAddress: address,
-    kind: "sweep",
-    title: "Spare Change Sweep",
-    details: `Swept ${pendingRows.length} round-ups into the vault`,
-    amountUSDC: Number(totalAmount.toFixed(2)),
-    direction: "in",
-    status: "completed",
-    source: "user",
-    createdAt: new Date(),
+    const totalAmount = pendingRows.reduce((acc, row) => acc + row.roundUpAmount, 0);
+    await db.insert(userTransactions).values({
+      id: crypto.randomUUID(),
+      walletAddress: address,
+      kind: "sweep",
+      title: "Spare Change Sweep",
+      details: `Swept ${pendingRows.length} round-ups into the vault`,
+      amountUSDC: Number(totalAmount.toFixed(2)),
+      direction: "in",
+      status: "completed",
+      source: "user",
+      createdAt: new Date(),
+    });
+
+    return { success: true, sweptCount: pendingRows.length };
   });
-
-  return { success: true, sweptCount: pendingRows.length };
 }

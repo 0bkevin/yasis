@@ -1,6 +1,6 @@
 "use client";
 
-import { useUserPosition, useDeposit, useRedeem, useVaults, useUserPerformance } from "@yo-protocol/react";
+import { useUserPosition, useDeposit, useRedeem, useVaults, useUserPerformance, useYoClient } from "@yo-protocol/react";
 import { VAULTS, parseTokenAmount } from "@yo-protocol/core";
 import { 
   ArrowRightLeft,
@@ -20,7 +20,7 @@ import { getUserConfig } from "@/actions/user-config";
 import { createUserTransaction } from "@/actions/user-data";
 import { allocateAvailableYield, getUserWealth } from "@/actions/user-wealth";
 import { getDonationRouterExecutionPlan, recordDonationRouterExecution } from "@/actions/router-execution";
-import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount, useSwitchChain } from "wagmi";
 import Link from "next/link";
 import { TransactionHistory } from "./TransactionHistory";
 import { getAquiferHealth, getAquiferProgress, getAquiferSubtitle, getAquiferTypeLabel } from "@/lib/aquifers";
@@ -39,6 +39,7 @@ export function DashboardOverview() {
   const pendingDonationRoutesRef = useRef<Array<{ id: string; name: string; amountUSDC: number; destinationAddress: string }>>([]);
   const currentDonationRouteRef = useRef<{ id: string; name: string; amountUSDC: number; destinationAddress: string } | null>(null);
   const completedDonationCountRef = useRef(0);
+  const pendingDepositAmountRef = useRef<number>(0);
 
   // Fetch DB Data
   const { data: userConfig } = useQuery({
@@ -55,13 +56,30 @@ export function DashboardOverview() {
   const vaultAddress = VAULTS.yoUSD.address;
   const { position, refetch: refetchPosition } = useUserPosition(vaultAddress);
   const { vaults } = useVaults();
-  const { address: userAddress } = useAccount();
+  const { address: userAddress, chainId } = useAccount();
+  const { switchChain } = useSwitchChain();
+  const client = useYoClient();
   const { performance } = useUserPerformance(vaultAddress, userAddress);
 
   // Setup Deposit Hook
   const { deposit, step: depositStep, isLoading: isDepositing, error: depositError, reset: resetDeposit } = useDeposit({
     vault: vaultAddress,
-    onConfirmed: () => {
+    onConfirmed: async () => {
+      const amount = pendingDepositAmountRef.current;
+      if (amount > 0) {
+        await createUserTransaction({
+          kind: "deposit",
+          title: "Manual Deposit",
+          details: "Deposit from connected wallet",
+          amountUSDC: amount,
+          direction: "in",
+          status: "completed",
+        });
+        pendingDepositAmountRef.current = 0;
+        queryClient.invalidateQueries({ queryKey: ['user-transactions'] });
+        queryClient.invalidateQueries({ queryKey: ["user-wealth"] });
+      }
+      setManualAmount("");
       setSuccessMessage("Deposit Successful!");
       setShowSuccess(true);
       refetchPosition();
@@ -235,33 +253,43 @@ export function DashboardOverview() {
     : [];
 
   const handleManualDeposit = async () => {
+    if (chainId !== 8453) {
+      switchChain({ chainId: 8453 });
+      return;
+    }
+
     if (!depositAmount || isNaN(Number(depositAmount)) || Number(depositAmount) <= 0) return;
     try {
-      const amountNumber = Number(depositAmount);
-      const amountRaw = parseTokenAmount(depositAmount, 6);
+      const dotIndex = depositAmount.indexOf('.');
+      const sanitizedAmount = dotIndex !== -1 
+        ? depositAmount.slice(0, dotIndex + 7) 
+        : depositAmount;
+
+      const amountNumber = Number(sanitizedAmount);
+      const amountRaw = parseTokenAmount(sanitizedAmount, 6);
+      pendingDepositAmountRef.current = amountNumber;
       await deposit({
         token: VAULTS.yoUSD.underlying.address[8453]!, 
         amount: amountRaw
       });
-
-      await createUserTransaction({
-        kind: "deposit",
-        title: "Manual Deposit",
-        details: "Deposit from connected wallet",
-        amountUSDC: amountNumber,
-        direction: "in",
-        status: "completed",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['user-transactions'] });
-      queryClient.invalidateQueries({ queryKey: ["user-wealth"] });
     } catch (e) {
+      pendingDepositAmountRef.current = 0;
       console.error("Deposit failed", e);
     }
   };
 
   const handleRouteYield = async () => {
+    if (chainId !== 8453) {
+      switchChain({ chainId: 8453 });
+      return;
+    }
+
     if (!position || position.shares === 0n) return;
+    if (!client) {
+      alert("YO Client not initialized yet.");
+      return;
+    }
+
     try {
       const plan = await getDonationRouterExecutionPlan(availableYield);
 
@@ -275,7 +303,8 @@ export function DashboardOverview() {
         return;
       }
 
-      const sharesToRedeem = parseTokenAmount(plan.totalAmountUSDC.toFixed(6), 6);
+      const rawAmountToWithdraw = parseTokenAmount(plan.totalAmountUSDC.toFixed(6), 6);
+      const sharesToRedeem = await client.quoteConvertToShares(vaultAddress, rawAmountToWithdraw);
       
       if (sharesToRedeem > position.shares) {
         alert("Not enough yield/balance to execute these routes.");
@@ -523,10 +552,12 @@ export function DashboardOverview() {
 
               <button 
                 onClick={handleManualDeposit}
-                disabled={isDepositing || !depositAmount}
+                disabled={chainId === 8453 && (isDepositing || !depositAmount)}
                 className="w-full py-4 bg-seashell text-deep-slate rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex justify-center items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isDepositing ? (
+                {chainId !== 8453 ? (
+                  <>Switch to Base</>
+                ) : isDepositing ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin text-terracotta" />
                     {depositStep === 'approving' ? 'Approving USDC...' : 'Depositing...'}
@@ -584,12 +615,18 @@ export function DashboardOverview() {
 
             <button 
               onClick={handleRouteYield}
-              disabled={isRedeeming || isTransferring || totalAssets <= 0 || activeDonationRouters.length === 0}
+              disabled={chainId === 8453 && (isRedeeming || isTransferring || totalAssets <= 0 || activeDonationRouters.length === 0)}
               className="w-full py-4 bg-terracotta hover:bg-[#d1614a] text-white rounded-xl font-bold transition-all shadow-lg shadow-terracotta/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale"
             >
-              {routingStep === 'redeeming' && <><Loader2 className="w-5 h-5 animate-spin" /> Redeeming Yield...</>}
-              {routingStep === 'transferring' && <><Loader2 className="w-5 h-5 animate-spin" /> Sending Donations...</>}
-              {routingStep === 'idle' && <><ArrowRightLeft className="w-4 h-4" /> Execute Donation Routes</>}
+              {chainId !== 8453 ? (
+                <>Switch to Base</>
+              ) : routingStep === 'redeeming' ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Redeeming Yield...</>
+              ) : routingStep === 'transferring' ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Sending Donations...</>
+              ) : (
+                <><ArrowRightLeft className="w-4 h-4" /> Execute Donation Routes</>
+              )}
             </button>
             <p className="text-xs text-deep-slate/50 mt-3 leading-relaxed">
               Only active donation routers execute onchain here. Subscription routers remain planning targets until merchant payout automation is built.

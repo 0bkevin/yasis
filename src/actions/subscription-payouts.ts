@@ -5,6 +5,9 @@ import { db } from "@/db";
 import { aquiferEvents, aquifers, subscriptionPayoutExecutions, subscriptionPayoutSchedules, userTransactions, users } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { recordAquiferEvent } from "@/actions/aquifers";
+import { Mutex } from "async-mutex";
+
+const executePayoutsMutex = new Mutex();
 
 async function getAuthAddress() {
   const session = await getSession();
@@ -143,28 +146,79 @@ function computeNextPayoutAt(from: Date, billingDay: number) {
 
 export async function executeDueSubscriptionPayouts(aquiferId?: string) {
   const address = await getAuthAddress();
-  const now = new Date();
+  
+  return await executePayoutsMutex.runExclusive(async () => {
+    const now = new Date();
 
-  const allDueSchedules = await db
-    .select()
-    .from(subscriptionPayoutSchedules)
-    .where(
-      and(
-        eq(subscriptionPayoutSchedules.walletAddress, address),
-        eq(subscriptionPayoutSchedules.status, "active"),
-        lte(subscriptionPayoutSchedules.nextPayoutAt, now),
-      ),
-    );
+    const allDueSchedules = await db
+      .select()
+      .from(subscriptionPayoutSchedules)
+      .where(
+        and(
+          eq(subscriptionPayoutSchedules.walletAddress, address),
+          eq(subscriptionPayoutSchedules.status, "active"),
+          lte(subscriptionPayoutSchedules.nextPayoutAt, now),
+        ),
+      );
 
-  const dueSchedules = aquiferId
-    ? allDueSchedules.filter((schedule) => schedule.aquiferId === aquiferId)
-    : allDueSchedules;
+    const dueSchedules = aquiferId
+      ? allDueSchedules.filter((schedule) => schedule.aquiferId === aquiferId)
+      : allDueSchedules;
 
-  const results: Array<{ scheduleId: string; merchantName: string; amountUSDC: number; status: "completed" | "skipped" }> = [];
+    const results: Array<{ scheduleId: string; merchantName: string; amountUSDC: number; status: "completed" | "skipped" }> = [];
 
-  for (const schedule of dueSchedules) {
-    const aquifer = await db.select().from(aquifers).where(eq(aquifers.id, schedule.aquiferId)).limit(1);
-    if (aquifer.length === 0) {
+    for (const schedule of dueSchedules) {
+      const aquifer = await db.select().from(aquifers).where(eq(aquifers.id, schedule.aquiferId)).limit(1);
+      if (aquifer.length === 0) {
+        await db.insert(subscriptionPayoutExecutions).values({
+          id: crypto.randomUUID(),
+          scheduleId: schedule.id,
+          aquiferId: schedule.aquiferId,
+          walletAddress: address,
+          merchantName: schedule.merchantName,
+          amountUSDC: schedule.monthlyAmountUSDC,
+          status: "skipped",
+          details: "Associated aquifer not found.",
+          scheduledFor: schedule.nextPayoutAt,
+          executedAt: new Date(),
+        });
+        results.push({ scheduleId: schedule.id, merchantName: schedule.merchantName, amountUSDC: schedule.monthlyAmountUSDC, status: "skipped" });
+        continue;
+      }
+
+      const currentBalance = Number(aquifer[0].balanceUSDC ?? 0);
+      
+      // Deduct the payout from the aquifer's balance
+      await db.update(aquifers).set({
+        balanceUSDC: Math.max(currentBalance - schedule.monthlyAmountUSDC, 0),
+        updatedAt: new Date()
+      }).where(eq(aquifers.id, schedule.aquiferId));
+
+      await db.insert(userTransactions).values({
+        id: crypto.randomUUID(),
+        walletAddress: address,
+        kind: "route",
+        title: "Scheduled Subscription Payout",
+        details: `Planned payout recorded for ${schedule.merchantName}`,
+        counterparty: schedule.merchantName,
+        amountUSDC: schedule.monthlyAmountUSDC,
+        direction: "out",
+        status: "completed",
+        source: "user",
+        createdAt: new Date(),
+      });
+
+      await db.insert(aquiferEvents).values({
+        id: crypto.randomUUID(),
+        aquiferId: schedule.aquiferId,
+        walletAddress: address,
+        eventType: "updated",
+        title: `${schedule.merchantName} payout recorded`,
+        details: `Scheduled subscription payout for $${schedule.monthlyAmountUSDC.toFixed(2)} was marked due and recorded.`,
+        amountUSDC: schedule.monthlyAmountUSDC,
+        createdAt: new Date(),
+      });
+
       await db.insert(subscriptionPayoutExecutions).values({
         id: crypto.randomUUID(),
         scheduleId: schedule.id,
@@ -172,64 +226,24 @@ export async function executeDueSubscriptionPayouts(aquiferId?: string) {
         walletAddress: address,
         merchantName: schedule.merchantName,
         amountUSDC: schedule.monthlyAmountUSDC,
-        status: "skipped",
-        details: "Associated aquifer not found.",
+        status: "completed",
+        details: `Scheduled payout recorded for ${schedule.merchantName}.`,
         scheduledFor: schedule.nextPayoutAt,
         executedAt: new Date(),
       });
-      results.push({ scheduleId: schedule.id, merchantName: schedule.merchantName, amountUSDC: schedule.monthlyAmountUSDC, status: "skipped" });
-      continue;
+
+      await db.update(subscriptionPayoutSchedules).set({
+        nextPayoutAt: computeNextPayoutAt(now, schedule.billingDay),
+        updatedAt: new Date(),
+      }).where(eq(subscriptionPayoutSchedules.id, schedule.id));
+
+      results.push({ scheduleId: schedule.id, merchantName: schedule.merchantName, amountUSDC: schedule.monthlyAmountUSDC, status: "completed" });
     }
 
-    await db.insert(userTransactions).values({
-      id: crypto.randomUUID(),
-      walletAddress: address,
-      kind: "route",
-      title: "Scheduled Subscription Payout",
-      details: `Planned payout recorded for ${schedule.merchantName}`,
-      counterparty: schedule.merchantName,
-      amountUSDC: schedule.monthlyAmountUSDC,
-      direction: "out",
-      status: "completed",
-      source: "user",
-      createdAt: new Date(),
-    });
-
-    await db.insert(aquiferEvents).values({
-      id: crypto.randomUUID(),
-      aquiferId: schedule.aquiferId,
-      walletAddress: address,
-      eventType: "updated",
-      title: `${schedule.merchantName} payout recorded`,
-      details: `Scheduled subscription payout for $${schedule.monthlyAmountUSDC.toFixed(2)} was marked due and recorded.`,
-      amountUSDC: schedule.monthlyAmountUSDC,
-      createdAt: new Date(),
-    });
-
-    await db.insert(subscriptionPayoutExecutions).values({
-      id: crypto.randomUUID(),
-      scheduleId: schedule.id,
-      aquiferId: schedule.aquiferId,
-      walletAddress: address,
-      merchantName: schedule.merchantName,
-      amountUSDC: schedule.monthlyAmountUSDC,
-      status: "completed",
-      details: `Scheduled payout recorded for ${schedule.merchantName}.`,
-      scheduledFor: schedule.nextPayoutAt,
-      executedAt: new Date(),
-    });
-
-    await db.update(subscriptionPayoutSchedules).set({
-      nextPayoutAt: computeNextPayoutAt(now, schedule.billingDay),
-      updatedAt: new Date(),
-    }).where(eq(subscriptionPayoutSchedules.id, schedule.id));
-
-    results.push({ scheduleId: schedule.id, merchantName: schedule.merchantName, amountUSDC: schedule.monthlyAmountUSDC, status: "completed" });
-  }
-
-  return {
-    success: true,
-    processed: results.length,
-    results,
-  };
+    return {
+      success: true,
+      processed: results.length,
+      results,
+    };
+  });
 }

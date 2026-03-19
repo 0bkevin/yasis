@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 @theme {
   --color-seashell: #FFF5EE;
   --color-terracotta: #E2725B;
@@ -12,6 +13,7 @@
 body {
   background-color: var(--color-seashell);
   color: var(--color-deep-slate);
+  overscroll-behavior: 'contain';
 }
 
 /* Custom scrollbar to match aesthetic */

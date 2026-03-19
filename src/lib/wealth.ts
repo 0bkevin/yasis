@@ -33,6 +33,7 @@ export async function getProtectedPrincipal(walletAddress: string) {
   const rows = await db
     .select({
       deposits: sql<number>`coalesce(sum(case when ${userTransactions.kind} in ('deposit', 'sweep') and ${userTransactions.direction} = 'in' and ${userTransactions.status} = 'completed' then ${userTransactions.amountUSDC} else 0 end), 0)`,
+      // Only deduct actual principal withdrawals. Withdrawals of yield (like 'route') do not reduce protected principal.
       withdrawals: sql<number>`coalesce(sum(case when ${userTransactions.kind} = 'withdrawal' and ${userTransactions.direction} = 'out' and ${userTransactions.status} = 'completed' then ${userTransactions.amountUSDC} else 0 end), 0)`,
     })
     .from(userTransactions)

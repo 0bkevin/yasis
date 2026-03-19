@@ -8,6 +8,7 @@ import { getSpareBankTransactions, markSpareTransactionsSwept } from "@/actions/
 import { motion } from "framer-motion";
 import { useDeposit, useUserPosition, useVaults } from "@yo-protocol/react";
 import { VAULTS, parseTokenAmount } from "@yo-protocol/core";
+import { useAccount, useSwitchChain } from "wagmi";
 
 export default function SpareChangePage() {
   const queryClient = useQueryClient();
@@ -20,6 +21,8 @@ export default function SpareChangePage() {
   const vaultAddress = VAULTS.yoUSD.address;
   const { refetch } = useUserPosition(vaultAddress);
   const { vaults } = useVaults();
+  const { chainId } = useAccount();
+  const { switchChain } = useSwitchChain();
   
   const currentVaultStats = vaults?.find(v => v.contracts.vaultAddress.toLowerCase() === vaultAddress.toLowerCase());
   const currentApy = currentVaultStats?.yield?.['7d'] ? (parseFloat(currentVaultStats.yield['7d']) * 100).toFixed(2) : '0.00';
@@ -34,6 +37,10 @@ export default function SpareChangePage() {
   });
 
   const handleSweepAll = async () => {
+    if (chainId !== 8453) {
+      switchChain({ chainId: 8453 });
+      return;
+    }
     setIsSweeping(true);
     try {
       await deposit({
@@ -106,6 +113,10 @@ export default function SpareChangePage() {
   const realTotalRoundUp = pendingRealTransactions.reduce((acc, t) => acc + t.roundUpAmount, 0);
 
   const handleRealSweep = async () => {
+    if (chainId !== 8453) {
+      switchChain({ chainId: 8453 });
+      return;
+    }
     if (pendingRealTransactions.length === 0) return;
     setIsSweeping(true);
     try {
@@ -252,12 +263,18 @@ export default function SpareChangePage() {
               )}
               
               <button 
-                disabled={pendingRealTransactions.length === 0 || isSweeping || sweepMutation.isPending}
+                disabled={chainId === 8453 && (pendingRealTransactions.length === 0 || isSweeping || sweepMutation.isPending)}
                 onClick={handleRealSweep}
                 className="w-full py-4 bg-terracotta hover:bg-[#d1614a] text-white rounded-xl font-bold transition-all shadow-lg shadow-terracotta/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale"
               >
-                {isSweeping || sweepMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                Sweep ${realTotalRoundUp.toFixed(2)} to Vault
+                {chainId !== 8453 ? (
+                  <>Switch to Base</>
+                ) : (
+                  <>
+                    {isSweeping || sweepMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                    Sweep ${realTotalRoundUp.toFixed(2)} to Vault
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -309,11 +326,17 @@ export default function SpareChangePage() {
               initial={{ opacity: 0, x: 20 }} 
               animate={{ opacity: 1, x: 0 }}
               onClick={handleSweepAll}
-              disabled={isSweeping}
+              disabled={chainId === 8453 && isSweeping}
               className="px-6 py-4 bg-terracotta text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#d1614a] transition-all shadow-lg disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${isSweeping ? 'animate-spin' : ''}`} /> 
-              Sweep Pending ($5.40)
+              {chainId !== 8453 ? (
+                <>Switch to Base</>
+              ) : (
+                <>
+                  <RefreshCw className={`w-4 h-4 ${isSweeping ? 'animate-spin' : ''}`} /> 
+                  Sweep Pending ($5.40)
+                </>
+              )}
             </motion.button>
           </div>
 
