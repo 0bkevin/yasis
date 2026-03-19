@@ -58,10 +58,10 @@ export function PrizePoolPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-terracotta/20 rounded-xl blur-3xl -mr-20 -mt-20"></div>
           
           <div className="relative z-10">
-            <div className="flex justify-between items-start mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8">
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-bold text-seashell/50 mb-2">This Week&apos;s Jackpot</p>
-                <h2 className="text-6xl font-display font-bold text-terracotta">${pool?.currentYieldPotUSDC.toFixed(2) ?? "0.00"}</h2>
+                <h2 className="text-4xl sm:text-6xl font-display font-bold text-terracotta">${pool?.currentYieldPotUSDC.toFixed(2) ?? "0.00"}</h2>
               </div>
               <div className="text-right">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-xl text-sm font-bold">
@@ -72,7 +72,7 @@ export function PrizePoolPage() {
 
             <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><ArrowRightLeft className="w-4 h-4 text-terracotta" /> Enter the Pool</h3>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-seashell/50 font-bold">$</span>
                   <input

@@ -335,7 +335,7 @@ export function DashboardOverview() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-green-50 border border-green-200 p-4 rounded-xl shadow-xl flex items-center gap-3"
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-green-50 border border-green-200 p-4 rounded-xl shadow-xl flex items-center gap-3 max-w-[calc(100vw-2rem)]"
           >
             <CheckCircle2 className="text-green-500 w-6 h-6" />
             <div>
@@ -350,7 +350,7 @@ export function DashboardOverview() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-red-50 border border-red-200 p-4 rounded-xl shadow-xl flex items-center gap-3"
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-red-50 border border-red-200 p-4 rounded-xl shadow-xl flex items-center gap-3 max-w-[calc(100vw-2rem)]"
           >
             <AlertCircle className="text-red-500 w-6 h-6" />
             <div>
@@ -375,7 +375,7 @@ export function DashboardOverview() {
           >
             <p className="text-deep-slate/60 font-medium tracking-wide uppercase text-xs">Total Cultivated Wealth</p>
             <div className="flex items-end gap-4">
-              <h2 className="text-7xl lg:text-8xl font-display text-deep-slate tracking-tighter -ml-1 font-bold">
+              <h2 className="text-4xl sm:text-7xl lg:text-8xl font-display text-deep-slate tracking-tighter -ml-1 font-bold">
                 ${displayBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h2>
             </div>

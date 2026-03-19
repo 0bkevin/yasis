@@ -119,7 +119,7 @@ export function EditPocketsModal({
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="bg-seashell w-full max-w-4xl rounded-xl p-6 shadow-2xl border border-white/50"
+            className="bg-seashell w-full max-w-4xl rounded-xl p-4 sm:p-6 shadow-2xl border border-white/50 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-display font-bold">Design Your Aquifers</h2>
@@ -160,8 +160,7 @@ export function EditPocketsModal({
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-deep-slate/50 mb-1">Allocation</label>
                       <div className="flex items-center gap-2">

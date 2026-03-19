@@ -200,15 +200,15 @@ export default function DonationsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-deep-slate text-seashell rounded-xl p-6">
           <p className="text-seashell/60 text-xs font-bold uppercase tracking-wider mb-2">Protected Principal</p>
-          <p className="text-3xl font-display font-bold">${(wealthSnapshot?.protectedPrincipal ?? 0).toFixed(2)}</p>
+          <p className="text-2xl sm:text-3xl font-display font-bold">${(wealthSnapshot?.protectedPrincipal ?? 0).toFixed(2)}</p>
         </div>
         <div className="bg-white/60 border border-white rounded-xl p-6">
           <p className="text-deep-slate/40 text-xs font-bold uppercase tracking-wider mb-2">Earned Yield</p>
-          <p className="text-3xl font-display font-bold text-terracotta">${(wealthSnapshot?.earnedYield ?? 0).toFixed(2)}</p>
+          <p className="text-2xl sm:text-3xl font-display font-bold text-terracotta">${(wealthSnapshot?.earnedYield ?? 0).toFixed(2)}</p>
         </div>
         <div className="bg-white/60 border border-white rounded-xl p-6">
           <p className="text-deep-slate/40 text-xs font-bold uppercase tracking-wider mb-2">Yield Available To Route</p>
-          <p className="text-3xl font-display font-bold text-deep-slate">${(wealthSnapshot?.availableYield ?? 0).toFixed(2)}</p>
+          <p className="text-2xl sm:text-3xl font-display font-bold text-deep-slate">${(wealthSnapshot?.availableYield ?? 0).toFixed(2)}</p>
         </div>
       </div>
 
