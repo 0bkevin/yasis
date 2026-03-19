@@ -40,7 +40,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
       const finalDuration = duration !== undefined ? duration : defaultDuration;
 
-      setToasts((prev) => [{ id, type, title, message, duration: finalDuration }, ...prev]);
+      setToasts((prev) => {
+        // Anti-loop check: don't add identical toast if it's already the most recent one
+        const mostRecent = prev[0];
+        if (mostRecent && 
+            mostRecent.type === type && 
+            mostRecent.title === title && 
+            mostRecent.message === message) {
+          return prev;
+        }
+        return [{ id, type, title, message, duration: finalDuration }, ...prev];
+      });
 
       if (finalDuration > 0) {
         setTimeout(() => {
@@ -78,9 +88,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     });
   }, [dismiss]);
 
+  const actions = React.useMemo(() => ({ toast, dismiss, updateToast }), [toast, dismiss, updateToast]);
+
   return (
     <ToastStateContext.Provider value={toasts}>
-      <ToastActionsContext.Provider value={{ toast, dismiss, updateToast }}>
+      <ToastActionsContext.Provider value={actions}>
         {children}
       </ToastActionsContext.Provider>
     </ToastStateContext.Provider>
