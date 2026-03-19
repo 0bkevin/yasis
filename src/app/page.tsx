@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { ArrowRight, Wallet, Blocks, Network, ArrowUpRight, Zap, ShieldCheck, Cpu, Anchor, BarChart3, Repeat, Lock } from "lucide-react";
+import { ArrowRight, Wallet, Blocks, Network, ArrowUpRight, Zap, ShieldCheck, Cpu, Anchor, BarChart3, Repeat, Lock, Droplets, HeartHandshake, Coins, Coffee, Shield, Target, Users, Gift, PiggyBank, TrendingUp, Receipt, Banknote, CircleDollarSign, Percent } from "lucide-react";
 import { useAppKit } from "@reown/appkit/react";
 import { useAccount } from "wagmi";
 import { useAuthenticationStatus } from "@/components/providers/useAuthStatus";
@@ -120,9 +120,9 @@ export default function Home() {
               </div>
               
               <div className="relative mb-8">
-                <h1 className="text-6xl md:text-[90px] lg:text-[110px] font-sans font-medium text-deep-slate leading-[0.9] tracking-tighter uppercase relative z-10">
-                  <span className="block overflow-hidden pb-2"><motion.span initial={{ y: "100%" }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} className="block">CAPITAL,</motion.span></span>
-                  <span className="block overflow-hidden pb-4"><motion.span initial={{ y: "100%" }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} className="block font-display font-bold italic text-terracotta lowercase tracking-tight ml-8 md:ml-16">unbound.</motion.span></span>
+                <h1 className="text-5xl sm:text-6xl md:text-[90px] lg:text-[110px] font-sans font-medium text-deep-slate leading-[0.9] tracking-tighter uppercase relative z-10">
+                  <span className="block overflow-hidden pb-2"><motion.span initial={{ y: "100%" }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} className="block">MONEY</motion.span></span>
+                  <span className="block overflow-hidden pb-4"><motion.span initial={{ y: "100%" }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} className="block font-display font-bold italic text-terracotta lowercase tracking-tight ml-8 md:ml-12">that never sleeps.</motion.span></span>
                 </h1>
                 {/* Structural line */}
                 <motion.div 
@@ -139,7 +139,7 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
                 className="text-lg md:text-2xl text-deep-slate/70 leading-relaxed max-w-xl font-light mb-12"
               >
-                Transform idle stablecoins into a yield-aware cashflow workspace. Today, Oasis helps you deposit into YO, track earned yield, and manage donation routes and planning targets from one place.
+                Your savings earn 10x more than any bank — automatically. Deposit USDC, let the YO engine optimize your yield, and route earnings wherever they matter most.
               </motion.p>
               
               <motion.div 
@@ -166,7 +166,7 @@ export default function Home() {
 
 
           {/* Right Column: Creative Visual */}
-          <div className="lg:col-span-5 relative h-[500px] md:h-[600px] w-full mt-10 lg:mt-0 flex items-center justify-center">
+          <div className="lg:col-span-5 relative h-[400px] sm:h-[500px] md:h-[600px] w-full mt-10 lg:mt-0 flex items-center justify-center">
             
             {/* Architectural Background */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -203,7 +203,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 40, x: -20, rotateZ: -5 }}
                 animate={{ opacity: 1, y: -60, x: -40, rotateZ: -2 }}
                 transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute left-0 sm:-left-12 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-xl border border-white/60 p-6 w-[280px] shadow-2xl shadow-deep-slate/10 rounded-xl"
+                className="absolute left-0 sm:-left-12 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-xl border border-white/60 p-4 sm:p-6 w-[220px] sm:w-[280px] shadow-2xl shadow-deep-slate/10 rounded-xl"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/80 to-transparent rounded-xl blur-2xl -z-10"></div>
                 
@@ -230,7 +230,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 40, x: 20, rotateZ: 5 }}
                 animate={{ opacity: 1, y: 60, x: 40, rotateZ: 2 }}
                 transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute right-0 sm:-right-12 top-1/2 -translate-y-1/2 bg-deep-slate text-white p-7 w-[300px] shadow-2xl shadow-deep-slate/20 rounded-xl overflow-hidden border border-white/10"
+                className="absolute right-0 sm:-right-12 top-1/2 -translate-y-1/2 bg-deep-slate text-white p-5 sm:p-7 w-[230px] sm:w-[300px] shadow-2xl shadow-deep-slate/20 rounded-xl overflow-hidden border border-white/10"
               >
                 {/* Internal Glow */}
                 <div className="absolute -top-20 -right-20 w-48 h-48 bg-terracotta/30 rounded-xl blur-[50px]"></div>
@@ -247,7 +247,7 @@ export default function Home() {
                 
                 <div className="relative z-10">
                   <div className="text-[11px] font-bold tracking-[0.2em] text-seashell/60 uppercase mb-2">Optimized APY</div>
-                  <div className="text-7xl font-display font-medium text-seashell flex items-baseline gap-1 tracking-tighter">
+                  <div className="text-5xl sm:text-7xl font-display font-medium text-seashell flex items-baseline gap-1 tracking-tighter">
                     14.2<span className="text-4xl text-terracotta">%</span>
                   </div>
                 </div>
@@ -492,6 +492,372 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Section 1: Your Yield Dashboard */}
+      <section id="feature-dashboard" className="relative z-20 bg-deep-slate text-seashell py-32 md:py-48 rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-terracotta/10 blur-[120px] rounded-xl"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:100px_100px]"></div>
+        </div>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md mb-8">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-seashell/80">Visibility</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-sans font-medium leading-[0.9] tracking-tighter mb-8 uppercase">
+                YOUR YIELD <br/>
+                <span className="font-display italic text-terracotta lowercase tracking-tight">dashboard</span>
+              </h2>
+              <p className="text-xl text-seashell/60 font-light leading-relaxed max-w-xl">
+                Deposit USDC, watch your yield grow in real-time, and see exactly where every dollar is working.
+              </p>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="relative"
+            >
+              <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-xl shadow-2xl">
+                <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-terracotta/20 rounded-xl flex items-center justify-center border border-terracotta/30">
+                      <Wallet className="w-6 h-6 text-terracotta" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-seashell/50 mb-1">Total Balance</div>
+                      <div className="text-3xl font-display text-seashell">$124,500.00</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-terracotta mb-1">Live APY</div>
+                    <div className="text-2xl font-sans text-terracotta flex items-center gap-2"><TrendingUp className="w-5 h-5" /> 12.4%</div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-black/20 rounded-xl p-4 border border-white/5 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center"><CircleDollarSign className="w-4 h-4 text-blue-400" /></div>
+                      <span className="text-sm font-bold tracking-widest uppercase text-seashell/80">Aave V3</span>
+                    </div>
+                    <span className="font-mono text-sm text-seashell/60">$82,000</span>
+                  </div>
+                  <div className="bg-black/20 rounded-xl p-4 border border-white/5 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-500/20 rounded-xl flex items-center justify-center"><Percent className="w-4 h-4 text-green-400" /></div>
+                      <span className="text-sm font-bold tracking-widest uppercase text-seashell/80">Compound</span>
+                    </div>
+                    <span className="font-mono text-sm text-seashell/60">$42,500</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2: Aquifers */}
+      <section id="feature-aquifers" className="relative z-10 bg-seashell py-32 md:py-48 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 -left-64 w-[500px] h-[500px] bg-terracotta/5 rounded-xl blur-[100px]"></div>
+        </div>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="order-2 lg:order-1 relative"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/60 backdrop-blur-xl border border-deep-slate/10 p-6 rounded-xl shadow-[0_20px_40px_-15px_rgba(47,79,79,0.05)]">
+                  <Droplets className="w-8 h-8 text-terracotta mb-4" />
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-deep-slate/50 mb-1">Aquifer 01</div>
+                  <div className="text-lg font-sans font-medium text-deep-slate mb-4">Emergency Fund</div>
+                  <div className="h-1.5 bg-deep-slate/10 rounded-xl overflow-hidden mb-2">
+                    <div className="h-full bg-terracotta w-[80%]"></div>
+                  </div>
+                  <div className="text-xs font-mono text-deep-slate/60">$8,000 / $10k</div>
+                </div>
+                <div className="bg-white/60 backdrop-blur-xl border border-deep-slate/10 p-6 rounded-xl shadow-[0_20px_40px_-15px_rgba(47,79,79,0.05)] translate-y-8">
+                  <Target className="w-8 h-8 text-deep-slate mb-4" />
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-deep-slate/50 mb-1">Aquifer 02</div>
+                  <div className="text-lg font-sans font-medium text-deep-slate mb-4">Vacation</div>
+                  <div className="h-1.5 bg-deep-slate/10 rounded-xl overflow-hidden mb-2">
+                    <div className="h-full bg-deep-slate w-[45%]"></div>
+                  </div>
+                  <div className="text-xs font-mono text-deep-slate/60">$2,250 / $5k</div>
+                </div>
+                <div className="bg-white/60 backdrop-blur-xl border border-deep-slate/10 p-6 rounded-xl shadow-[0_20px_40px_-15px_rgba(47,79,79,0.05)] col-span-2 mt-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Coffee className="w-8 h-8 text-deep-slate/60" />
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-deep-slate/50 mb-1">Aquifer 03</div>
+                      <div className="text-lg font-sans font-medium text-deep-slate">Subscription Buffer</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-mono text-deep-slate/60 mb-1">$120 / mo</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-terracotta">Fully Funded</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="order-1 lg:order-2"
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-deep-slate/10 bg-white/50 backdrop-blur-md mb-8">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-deep-slate/60">Allocation</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-sans font-medium leading-[0.9] tracking-tighter mb-8 uppercase text-deep-slate">
+                AQUIFERS <br/>
+                <span className="font-display italic text-terracotta lowercase tracking-tight">explained</span>
+              </h2>
+              <p className="text-xl text-deep-slate/60 font-light leading-relaxed max-w-xl">
+                Split your yield into purpose-built pools. Emergency funds, vacation savings, subscription buffers — each with its own progress tracking and overflow rules.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 3: Route Your Yield */}
+      <section id="feature-routing" className="relative z-20 bg-deep-slate text-seashell py-32 md:py-48 rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-misty-rose/10 blur-[120px] rounded-xl"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:100px_100px]"></div>
+        </div>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md mb-8">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-seashell/80">Impact</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-sans font-medium leading-[0.9] tracking-tighter mb-8 uppercase">
+                ROUTE YOUR <br/>
+                <span className="font-display italic text-terracotta lowercase tracking-tight">yield</span>
+              </h2>
+              <p className="text-xl text-seashell/60 font-light leading-relaxed max-w-xl">
+                Your yield works for causes you care about. Route earnings to verified NGOs with on-chain receipts, or earmark yield for monthly subscriptions.
+              </p>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="relative flex justify-center"
+            >
+              <div className="w-full max-w-md relative">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-xl w-48 text-center shadow-lg">
+                    <Zap className="w-6 h-6 text-terracotta mx-auto mb-2" />
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-seashell/80">Generated Yield</div>
+                    <div className="text-xl font-mono text-seashell">+$450.00</div>
+                  </div>
+                  
+                  <div className="h-12 w-[2px] bg-gradient-to-b from-white/20 to-terracotta/50 relative">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-deep-slate border border-terracotta/50 rounded-xl flex items-center justify-center">
+                      <ArrowRight className="w-3 h-3 text-terracotta rotate-90" />
+                    </div>
+                  </div>
+                  
+                  <div className="bg-terracotta/20 backdrop-blur-xl border border-terracotta/30 p-4 rounded-xl w-64 text-center shadow-lg shadow-terracotta/10">
+                    <Repeat className="w-6 h-6 text-terracotta mx-auto mb-2" />
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-terracotta">Oasis Router</div>
+                  </div>
+
+                  <div className="flex gap-8 w-full justify-center mt-4 relative">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-white/10 hidden sm:block"></div>
+                    <div className="absolute -top-4 left-[calc(50%-4rem)] w-[2px] h-4 bg-white/10 hidden sm:block"></div>
+                    <div className="absolute -top-4 right-[calc(50%-4rem)] w-[2px] h-4 bg-white/10 hidden sm:block"></div>
+
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-xl w-32 text-center">
+                      <HeartHandshake className="w-5 h-5 text-seashell/60 mx-auto mb-2" />
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-seashell/60 mb-1">NGO</div>
+                      <div className="text-sm font-mono text-seashell">10%</div>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-xl w-32 text-center">
+                      <Receipt className="w-5 h-5 text-seashell/60 mx-auto mb-2" />
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-seashell/60 mb-1">Subs</div>
+                      <div className="text-sm font-mono text-seashell">90%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 4: Spare Change */}
+      <section id="feature-sweeps" className="relative z-10 bg-seashell py-32 md:py-48 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-deep-slate/5 rounded-xl blur-[100px]"></div>
+        </div>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="order-2 lg:order-1 relative"
+            >
+              <div className="bg-white/60 backdrop-blur-xl border border-deep-slate/10 p-8 rounded-xl shadow-[0_20px_40px_-15px_rgba(47,79,79,0.05)] max-w-md mx-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-3">
+                    <Banknote className="w-6 h-6 text-deep-slate" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-deep-slate/60">Recent Transactions</span>
+                  </div>
+                  <div className="px-3 py-1 bg-terracotta/10 text-terracotta rounded-xl text-[10px] font-bold uppercase tracking-widest">
+                    Auto-Sweep On
+                  </div>
+                </div>
+                
+                <div className="space-y-4 mb-8">
+                  <div className="flex justify-between items-center p-3 hover:bg-white/50 rounded-xl transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-deep-slate/5 rounded-xl flex items-center justify-center"><Coffee className="w-4 h-4 text-deep-slate/60" /></div>
+                      <div>
+                        <div className="text-sm font-bold text-deep-slate">Coffee Shop</div>
+                        <div className="text-[10px] uppercase tracking-widest text-deep-slate/50">Today</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-mono text-deep-slate">$4.50</div>
+                      <div className="text-[10px] font-bold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-xl inline-block mt-1">+$0.50</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center p-3 hover:bg-white/50 rounded-xl transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-deep-slate/5 rounded-xl flex items-center justify-center"><Zap className="w-4 h-4 text-deep-slate/60" /></div>
+                      <div>
+                        <div className="text-sm font-bold text-deep-slate">Transit</div>
+                        <div className="text-[10px] uppercase tracking-widest text-deep-slate/50">Yesterday</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-mono text-deep-slate">$2.75</div>
+                      <div className="text-[10px] font-bold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-xl inline-block mt-1">+$0.25</div>
+                    </div>
+                  </div>
+                </div>
+
+                <button className="w-full py-4 bg-deep-slate text-seashell rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-deep-slate/90 transition-colors">
+                  <Coins className="w-4 h-4" /> Sweep $0.75 to Vault
+                </button>
+              </div>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="order-1 lg:order-2"
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-deep-slate/10 bg-white/50 backdrop-blur-md mb-8">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-deep-slate/60">Automation</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-sans font-medium leading-[0.9] tracking-tighter mb-8 uppercase text-deep-slate">
+                SPARE CHANGE <br/>
+                <span className="font-display italic text-terracotta lowercase tracking-tight">& smart sweeps</span>
+              </h2>
+              <p className="text-xl text-deep-slate/60 font-light leading-relaxed max-w-xl">
+                Connect your bank, round up every purchase, and sweep the spare change into your vault automatically.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 5: Built-In Protection */}
+      <section id="feature-protection" className="relative z-20 bg-deep-slate text-seashell py-32 md:py-48 rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-[60%] bg-terracotta/5 blur-[150px] rounded-xl"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:100px_100px]"></div>
+        </div>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md mb-8">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-seashell/80">Security</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-sans font-medium leading-[0.9] tracking-tighter mb-8 uppercase">
+                BUILT-IN <br/>
+                <span className="font-display italic text-terracotta lowercase tracking-tight">protection</span>
+              </h2>
+              <p className="text-xl text-seashell/60 font-light leading-relaxed">
+                Tax auto-reserves, no-loss prize draws, and collaborative savings.
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6 }}
+              className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-xl hover:bg-white/10 transition-colors"
+            >
+              <Shield className="w-10 h-10 text-terracotta mb-6" />
+              <h3 className="text-2xl font-sans font-medium text-seashell mb-4">Tax Shield</h3>
+              <p className="text-seashell/60 font-light leading-relaxed text-sm">
+                Auto-reserve a configurable percentage of deposits into a protected tax reserve that earns bonus yield.
+              </p>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-xl hover:bg-white/10 transition-colors"
+            >
+              <Gift className="w-10 h-10 text-terracotta mb-6" />
+              <h3 className="text-2xl font-sans font-medium text-seashell mb-4">Prize Pool</h3>
+              <p className="text-seashell/60 font-light leading-relaxed text-sm">
+                No-loss savings lottery. Deposit principal, yield goes to prize pot, weekly draws. Principal always protected.
+              </p>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-xl hover:bg-white/10 transition-colors"
+            >
+              <Users className="w-10 h-10 text-terracotta mb-6" />
+              <h3 className="text-2xl font-sans font-medium text-seashell mb-4">Shared Aquifers</h3>
+              <p className="text-seashell/60 font-light leading-relaxed text-sm">
+                Invite-only collaborative savings pools. Track individual contributions while working towards a joint goal.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Visual Break / Quote */}
       <section className="py-32 border-y border-deep-slate/10 bg-white relative overflow-hidden">
         {/* Typographic background pattern */}
@@ -530,7 +896,7 @@ export default function Home() {
             <span className="relative z-10 italic">O</span>
           </div>
           
-          <h2 className="text-6xl md:text-[100px] font-sans font-medium leading-[0.9] tracking-tighter mb-10 uppercase">
+          <h2 className="text-4xl sm:text-6xl md:text-[100px] font-sans font-medium leading-[0.9] tracking-tighter mb-10 uppercase">
             ENTER THE <span className="font-display italic text-terracotta lowercase tracking-tight">oasis.</span>
           </h2>
           
