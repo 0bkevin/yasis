@@ -74,6 +74,7 @@ export default function Home() {
             <Link href="#manifesto" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">Manifesto</Link>
             <Link href="#architecture" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">Architecture</Link>
             <Link href="https://docs.yo.xyz" target="_blank" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">YO Engine</Link>
+            <Link href="/pitch" className="text-deep-slate/80 hover:text-terracotta transition-colors text-sm font-medium hidden md:block uppercase tracking-widest">Pitch</Link>
             <div className="pl-4 border-l border-deep-slate/20">
               <button 
                 onClick={handleAction}
